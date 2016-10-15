@@ -34,7 +34,6 @@ func NewJenkins(auth *Auth, url string) *Jenkins {
 
 func (jenkins *Jenkins) buildURL(path string, params url.Values) (requestURL string) {
 	requestURL = jenkins.BaseURL + path
-	fmt.Println(requestURL)
 	if params != nil {
 		queryString := params.Encode()
 		if queryString != "" {

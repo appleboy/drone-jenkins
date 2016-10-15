@@ -42,6 +42,7 @@ Execute from the working directory:
 
 ```
 docker run --rm \
+  -e PLUGIN_BASE_URL=http://example.com \
   -e PLUGIN_USERNAME=xxxxxxx \
   -e PLUGIN_TOKEN=xxxxxxx \
   -e PLUGIN_JOB=xxxxxxx \
