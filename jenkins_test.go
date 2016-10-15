@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/stretchr/testify/assert"
 
+	"net/url"
 	"testing"
 )
 
@@ -28,4 +29,15 @@ func TestUnSupportProtocol(t *testing.T) {
 
 	err := jenkins.trigger("drone-jenkins", nil)
 	assert.NotNil(t, err)
+}
+
+func TestTriggerBuild(t *testing.T) {
+	auth := &Auth{
+		Username: "foo",
+		Token:    "bar",
+	}
+	jenkins := NewJenkins(auth, "http://example.com")
+
+	err := jenkins.trigger("drone-jenkins", url.Values{"token": []string{"bar"}})
+	assert.Nil(t, err)
 }
