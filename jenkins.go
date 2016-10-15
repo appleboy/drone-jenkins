@@ -71,15 +71,16 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (
 	requestURL := jenkins.buildURL(path, params)
 	req, err := http.NewRequest("POST", requestURL, nil)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	fmt.Println(resp)
 	return jenkins.parseResponse(resp, body)
 }
 

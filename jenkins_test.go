@@ -19,12 +19,13 @@ func TestParseJobPath(t *testing.T) {
 	assert.Equal(t, "/job/foo/job/bar", jenkins.parseJobPath("foo///bar"))
 }
 
-func TestTriggerBuild(t *testing.T) {
+func TestUnSupportProtocol(t *testing.T) {
 	auth := &Auth{
-		Username: "appleboy",
-		Token:    "XXXXXXXX",
+		Username: "foo",
+		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, "XXXXXX")
+	jenkins := NewJenkins(auth, "example.com")
 
-	jenkins.trigger("drone-jenkins", nil)
+	err := jenkins.trigger("drone-jenkins", nil)
+	assert.NotNil(t, err)
 }
