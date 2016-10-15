@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/appleboy/drone-jenkins.svg?branch=master)](https://travis-ci.org/appleboy/drone-jenkins) [![codecov](https://codecov.io/gh/appleboy/drone-jenkins/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-jenkins) [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/drone-jenkins)](https://goreportcard.com/report/github.com/appleboy/drone-jenkins)
 
-[Drone](https://github.com/drone/drone) plugin for sending jenkins notifications.
+[Drone](https://github.com/drone/drone) plugin for trigger [Jenkins](https://jenkins.io/) jobs.
 
 ## Build
 
