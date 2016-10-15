@@ -1,20 +1,8 @@
-# drone-telegram
+# drone-jenkins
 
-[![Build Status](https://travis-ci.org/appleboy/drone-telegram.svg?branch=master)](https://travis-ci.org/appleboy/drone-telegram) [![codecov](https://codecov.io/gh/appleboy/drone-telegram/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-telegram) [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/drone-telegram)](https://goreportcard.com/report/github.com/appleboy/drone-telegram)
+[![Build Status](https://travis-ci.org/appleboy/drone-jenkins.svg?branch=master)](https://travis-ci.org/appleboy/drone-jenkins) [![codecov](https://codecov.io/gh/appleboy/drone-jenkins/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-jenkins) [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/drone-jenkins)](https://goreportcard.com/report/github.com/appleboy/drone-jenkins)
 
-[Drone](https://github.com/drone/drone) plugin for sending telegram notifications.
-
-## Feature
-
-* [x] Send with Text Message. (`markdown` or `html` format)
-* [x] Send with New Photo.
-* [x] Send with New Document.
-* [x] Send with New Audio.
-* [x] Send with New Voice.
-* [x] Send with New Location.
-* [x] Send with New Venue.
-* [x] Send with New Video.
-* [x] Send with New Sticker.
+[Drone](https://github.com/drone/drone) plugin for sending jenkins notifications.
 
 ## Build
 
@@ -45,7 +33,7 @@ GCO disabled will result in an error when running the Docker image:
 
 ```
 docker: Error response from daemon: Container command
-'/bin/drone-telegram' not found or does not exist..
+'/bin/drone-jenkins' not found or does not exist..
 ```
 
 ## Usage
@@ -77,5 +65,5 @@ docker run --rm \
   -e DRONE_BUILD_LINK=http://github.com/appleboy/go-hello \
   -v $(pwd):$(pwd) \
   -w $(pwd) \
-  appleboy/drone-telegram
+  appleboy/drone-jenkins
 ```
