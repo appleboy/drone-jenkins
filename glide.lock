@@ -1,0 +1,26 @@
+hash: ff5d845fa6ea812800b45ad9496aedba9908d4cdf8eb88fb73c8a51b02365e66
+updated: 2016-10-15T18:04:39.591783998+08:00
+imports:
+- name: github.com/joho/godotenv
+  version: 4ed13390c0acd2ff4e371e64d8b97c8954138243
+  subpackages:
+  - autoload
+- name: github.com/technoweenie/multipartstreamer
+  version: a90a01d73ae432e2611d178c18367fbaa13e0154
+- name: github.com/urfave/cli
+  version: 55f715e28c46073d0e217e2ce8eb46b0b45e3db6
+- name: gopkg.in/telegram-bot-api.v4
+  version: a7f48eb2dd301356942677e65bebe0c9aef07013
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 976c720a22c8eb4eb6a0b4348ad85ad12491a506
+  subpackages:
+  - assert
