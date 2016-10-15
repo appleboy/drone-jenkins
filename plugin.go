@@ -27,9 +27,10 @@ type (
 
 	// Config for the plugin.
 	Config struct {
-		URL   string
-		Token string
-		Job   []string
+		BaseURL  string
+		Username string
+		Token    string
+		Job      []string
 	}
 
 	// Plugin values.
@@ -57,10 +58,20 @@ func trimElement(keys []string) []string {
 // Exec executes the plugin.
 func (p Plugin) Exec() error {
 
-	if len(p.Config.Token) == 0 {
-		log.Println("missing jenkins auth config")
+	if len(p.Config.BaseURL) == 0 || len(p.Config.Username) == 0 || len(p.Config.Token) == 0 {
+		log.Println("missing jenkins config")
 
-		return errors.New("missing jenkins auth config")
+		return errors.New("missing jenkins config")
+	}
+
+	auth := &Auth{
+		Username: p.Config.Username,
+		Token:    p.Config.Token,
+	}
+	jenkins := NewJenkins(auth, p.Config.BaseURL)
+
+	for _, value := range trimElement(p.Config.Job) {
+		jenkins.trigger(value, nil)
 	}
 
 	return nil

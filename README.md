@@ -42,19 +42,9 @@ Execute from the working directory:
 
 ```
 docker run --rm \
+  -e PLUGIN_USERNAME=xxxxxxx \
   -e PLUGIN_TOKEN=xxxxxxx \
-  -e PLUGIN_TO=xxxxxxx \
-  -e PLUGIN_MESSAGE=test \
-  -e PLUGIN_PHOTO=tests/github.png \
-  -e PLUGIN_DOCUMENT=tests/gophercolor.png \
-  -e PLUGIN_STICKER=tests/github-logo.png \
-  -e PLUGIN_AUDIO=tests/audio.mp3 \
-  -e PLUGIN_VOICE=tests/voice.ogg \
-  -e PLUGIN_LOCATION=24.9163213,121.1424972 \
-  -e PLUGIN_VENUE=24.9163213,121.1424972,title,address \
-  -e PLUGIN_VIDEO=tests/video.mp4 \
-  -e PLUGIN_DEBUG=true \
-  -e PLUGIN_FORMAT=markdown \
+  -e PLUGIN_JOB=xxxxxxx \
   -e DRONE_REPO_OWNER=appleboy \
   -e DRONE_REPO_NAME=go-hello \
   -e DRONE_COMMIT_SHA=e5e82b5eb3737205c25955dcc3dcacc839b7be52 \

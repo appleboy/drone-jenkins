@@ -23,6 +23,11 @@ func main() {
 			EnvVar: "PLUGIN_BASE_URL,JENKINS_BASE_URL",
 		},
 		cli.StringFlag{
+			Name:   "username",
+			Usage:  "jenkins username",
+			EnvVar: "PLUGIN_USERNAME,JENKINS_USERNAME",
+		},
+		cli.StringFlag{
 			Name:   "token",
 			Usage:  "jenkins token",
 			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN",
@@ -112,9 +117,10 @@ func run(c *cli.Context) error {
 			Link:    c.String("build.link"),
 		},
 		Config: Config{
-			URL:   c.String("base.url"),
-			Token: c.String("token"),
-			Job:   c.StringSlice("job"),
+			BaseURL:  c.String("base.url"),
+			Username: c.String("username"),
+			Token:    c.String("token"),
+			Job:      c.StringSlice("job"),
 		},
 	}
 
