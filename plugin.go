@@ -2,13 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
-
-	"gopkg.in/telegram-bot-api.v4"
 )
 
 type (
@@ -62,7 +57,7 @@ func trimElement(keys []string) []string {
 // Exec executes the plugin.
 func (p Plugin) Exec() error {
 
-	if len(p.Config.Token) == 0 || len(p.Config.To) == 0 {
+	if len(p.Config.Token) == 0 {
 		log.Println("missing jenkins auth config")
 
 		return errors.New("missing jenkins auth config")

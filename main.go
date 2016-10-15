@@ -28,59 +28,9 @@ func main() {
 			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN",
 		},
 		cli.StringSliceFlag{
-			Name:   "to",
-			Usage:  "telegram user",
-			EnvVar: "PLUGIN_TO",
-		},
-		cli.StringSliceFlag{
-			Name:   "message",
-			Usage:  "send telegram message",
-			EnvVar: "PLUGIN_MESSAGE",
-		},
-		cli.StringSliceFlag{
-			Name:   "photo",
-			Usage:  "send photo message",
-			EnvVar: "PLUGIN_PHOTO",
-		},
-		cli.StringSliceFlag{
-			Name:   "document",
-			Usage:  "send document message",
-			EnvVar: "PLUGIN_DOCUMENT",
-		},
-		cli.StringSliceFlag{
-			Name:   "sticker",
-			Usage:  "send sticker message",
-			EnvVar: "PLUGIN_STICKER",
-		},
-		cli.StringSliceFlag{
-			Name:   "audio",
-			Usage:  "send audio message",
-			EnvVar: "PLUGIN_AUDIO",
-		},
-		cli.StringSliceFlag{
-			Name:   "voice",
-			Usage:  "send voice message",
-			EnvVar: "PLUGIN_VOICE",
-		},
-		cli.StringSliceFlag{
-			Name:   "location",
-			Usage:  "send location message",
-			EnvVar: "PLUGIN_LOCATION",
-		},
-		cli.StringSliceFlag{
-			Name:   "venue",
-			Usage:  "send venue message",
-			EnvVar: "PLUGIN_VENUE",
-		},
-		cli.StringSliceFlag{
-			Name:   "video",
-			Usage:  "send video message",
-			EnvVar: "PLUGIN_VIDEO",
-		},
-		cli.BoolFlag{
-			Name:   "debug",
-			Usage:  "enable debug message",
-			EnvVar: "PLUGIN_DEBUG",
+			Name:   "job",
+			Usage:  "jenkins job",
+			EnvVar: "PLUGIN_JOB",
 		},
 		cli.StringFlag{
 			Name:   "format",
