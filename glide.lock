@@ -1,16 +1,12 @@
-hash: ff5d845fa6ea812800b45ad9496aedba9908d4cdf8eb88fb73c8a51b02365e66
-updated: 2016-10-15T18:04:39.591783998+08:00
+hash: 0ddd797a78c8eef869d73907846b08ce2ba1dc91ddb0c644b80e28a949f79819
+updated: 2016-10-18T10:10:10.836829677+08:00
 imports:
 - name: github.com/joho/godotenv
   version: 4ed13390c0acd2ff4e371e64d8b97c8954138243
   subpackages:
   - autoload
-- name: github.com/technoweenie/multipartstreamer
-  version: a90a01d73ae432e2611d178c18367fbaa13e0154
 - name: github.com/urfave/cli
   version: 55f715e28c46073d0e217e2ce8eb46b0b45e3db6
-- name: gopkg.in/telegram-bot-api.v4
-  version: a7f48eb2dd301356942677e65bebe0c9aef07013
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9

@@ -12,8 +12,8 @@ var Version string
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "telegram plugin"
-	app.Usage = "telegram plugin"
+	app.Name = "jenkins plugin"
+	app.Usage = "jenkins plugin"
 	app.Action = run
 	app.Version = Version
 	app.Flags = []cli.Flag{
@@ -36,12 +36,6 @@ func main() {
 			Name:   "job",
 			Usage:  "jenkins job",
 			EnvVar: "PLUGIN_JOB",
-		},
-		cli.StringFlag{
-			Name:   "format",
-			Value:  "markdown",
-			Usage:  "telegram message format",
-			EnvVar: "PLUGIN_FORMAT",
 		},
 		cli.StringFlag{
 			Name:   "repo.owner",
