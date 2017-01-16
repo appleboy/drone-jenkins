@@ -1,12 +1,12 @@
-hash: 0ddd797a78c8eef869d73907846b08ce2ba1dc91ddb0c644b80e28a949f79819
-updated: 2016-10-18T10:10:10.836829677+08:00
+hash: 33ad75827779208440690394b479984ac46bc9d6c817389fb6d98f9fddbdf813
+updated: 2017-01-16T10:47:58.426849408+08:00
 imports:
 - name: github.com/joho/godotenv
-  version: 4ed13390c0acd2ff4e371e64d8b97c8954138243
+  version: a01a834e1654b4c9ca5b3ad05159445cc9c7ad08
   subpackages:
   - autoload
 - name: github.com/urfave/cli
-  version: 55f715e28c46073d0e217e2ce8eb46b0b45e3db6
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
@@ -17,6 +17,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 976c720a22c8eb4eb6a0b4348ad85ad12491a506
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert
