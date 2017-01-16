@@ -24,6 +24,22 @@ func TestMissingJenkinsConfig(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestMissingJenkinsJob(t *testing.T) {
+	plugin := Plugin{
+		BaseURL:  "http://example.com",
+		Username: "foo",
+		Token:    "bar",
+	}
+
+	err := plugin.Exec()
+	assert.NotNil(t, err)
+
+	plugin.Job = []string{"   "}
+
+	err = plugin.Exec()
+	assert.NotNil(t, err)
+}
+
 func TestPluginTriggerBuild(t *testing.T) {
 	plugin := Plugin{
 		BaseURL:  "http://example.com",

@@ -36,13 +36,20 @@ func (p Plugin) Exec() error {
 		return errors.New("missing jenkins config")
 	}
 
+	jobs := trimElement(p.Job)
+
+	if len(jobs) == 0 {
+		return errors.New("missing jenkins job")
+	}
+
 	auth := &Auth{
 		Username: p.Username,
 		Token:    p.Token,
 	}
+
 	jenkins := NewJenkins(auth, p.BaseURL)
 
-	for _, value := range trimElement(p.Job) {
+	for _, value := range jobs {
 		jenkins.trigger(value, nil)
 	}
 
