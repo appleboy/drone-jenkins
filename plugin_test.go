@@ -16,9 +16,7 @@ func TestMissingConfig(t *testing.T) {
 
 func TestMissingJenkinsConfig(t *testing.T) {
 	plugin := Plugin{
-		Config: Config{
-			BaseURL: "http://example.com",
-		},
+		BaseURL: "http://example.com",
 	}
 
 	err := plugin.Exec()
@@ -28,26 +26,10 @@ func TestMissingJenkinsConfig(t *testing.T) {
 
 func TestPluginTriggerBuild(t *testing.T) {
 	plugin := Plugin{
-		Repo: Repo{
-			Name:  "go-hello",
-			Owner: "appleboy",
-		},
-		Build: Build{
-			Number:  101,
-			Status:  "success",
-			Link:    "https://github.com/appleboy/go-hello",
-			Author:  "Bo-Yi Wu",
-			Branch:  "master",
-			Message: "update by drone line plugin.",
-			Commit:  "e7c4f0a63ceeb42a39ac7806f7b51f3f0d204fd2",
-		},
-
-		Config: Config{
-			BaseURL:  "http://example.com",
-			Username: "foo",
-			Token:    "bar",
-			Job:      []string{"drone-jenkins"},
-		},
+		BaseURL:  "http://example.com",
+		Username: "foo",
+		Token:    "bar",
+		Job:      []string{"drone-jenkins"},
 	}
 
 	err := plugin.Exec()

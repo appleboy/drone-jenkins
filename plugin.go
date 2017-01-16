@@ -7,37 +7,12 @@ import (
 )
 
 type (
-	// Repo information.
-	Repo struct {
-		Owner string
-		Name  string
-	}
-
-	// Build information.
-	Build struct {
-		Event   string
-		Number  int
-		Commit  string
-		Message string
-		Branch  string
-		Author  string
-		Status  string
-		Link    string
-	}
-
-	// Config for the plugin.
-	Config struct {
+	// Plugin values.
+	Plugin struct {
 		BaseURL  string
 		Username string
 		Token    string
 		Job      []string
-	}
-
-	// Plugin values.
-	Plugin struct {
-		Repo   Repo
-		Build  Build
-		Config Config
 	}
 )
 
@@ -58,19 +33,19 @@ func trimElement(keys []string) []string {
 // Exec executes the plugin.
 func (p Plugin) Exec() error {
 
-	if len(p.Config.BaseURL) == 0 || len(p.Config.Username) == 0 || len(p.Config.Token) == 0 {
+	if len(p.BaseURL) == 0 || len(p.Username) == 0 || len(p.Token) == 0 {
 		log.Println("missing jenkins config")
 
 		return errors.New("missing jenkins config")
 	}
 
 	auth := &Auth{
-		Username: p.Config.Username,
-		Token:    p.Config.Token,
+		Username: p.Username,
+		Token:    p.Token,
 	}
-	jenkins := NewJenkins(auth, p.Config.BaseURL)
+	jenkins := NewJenkins(auth, p.BaseURL)
 
-	for _, value := range trimElement(p.Config.Job) {
+	for _, value := range trimElement(p.Job) {
 		jenkins.trigger(value, nil)
 	}
 
