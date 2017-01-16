@@ -4,9 +4,21 @@
 
 [Drone](https://github.com/drone/drone) plugin for trigger [Jenkins](https://jenkins.io/) jobs.
 
-## Build
+## Build or Download a binary
 
-Build the binary with the following commands:
+The pre-compiled binaries can be downloaded from [release page](https://github.com/appleboy/drone-jenkins/releases). Support the following OS type.
+
+* Windows amd64/386
+* Linux amd64/386
+* Darwin amd64/386
+
+With `Go` installed
+
+```
+$ go get -u -v github.com/appleboy/drone-jenkins
+``` 
+
+or build the binary with the following command:
 
 ```
 $ make build
@@ -38,8 +50,6 @@ There are three ways to trigger jenkins jobs.
 
 <a name="usage-from-binary"></a>
 ### Usage from binary
-
-#### trigger jenkins job
 
 trigger single job.
 
