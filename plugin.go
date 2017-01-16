@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"strings"
 )
 
@@ -34,8 +33,6 @@ func trimElement(keys []string) []string {
 func (p Plugin) Exec() error {
 
 	if len(p.BaseURL) == 0 || len(p.Username) == 0 || len(p.Token) == 0 {
-		log.Println("missing jenkins config")
-
 		return errors.New("missing jenkins config")
 	}
 

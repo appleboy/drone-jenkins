@@ -26,3 +26,4 @@ vendor
 drone-jenkins
 coverage.txt
 .env
+dist
