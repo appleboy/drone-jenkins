@@ -115,6 +115,8 @@ docker run --rm \
   appleboy/drone-jenkins
 ```
 
+You can get more [information](DOCS.md) about how to use scp plugin in drone.
+
 ## Testing
 
 Test the package with the following command:
