@@ -2,27 +2,20 @@ workspace:
   base: /srv/app
   path: src/github.com/appleboy/drone-jenkins
 
-pipeline:
-  clone:
+clone:
+  git:
     image: plugins/git
-    tags: true
+    depth: 50
 
-  # restore the cache from an sftp server
-  restore_cache:
-    image: appleboy/drone-sftp-cache
-    pull: true
-    restore: true
-    mount: [ .glide, vendor ]
-    ignore_branch: true
-
+pipeline:
   test:
     image: appleboy/golang-testing
     pull: true
     environment:
       TAGS: netgo
       GOPATH: /srv/app
+    secrets: [ codecov_token ]
     commands:
-      - make dep_install
       - make vet
       - make lint
       - make test
@@ -44,37 +37,34 @@ pipeline:
     when:
       event: [ tag ]
       branch: [ refs/tags/* ]
+      local: false
 
-  docker:
+  publish_tag:
     image: plugins/docker
     repo: ${DRONE_REPO}
     tags: [ '${DRONE_TAG}' ]
+    secrets: [ docker_username, docker_password ]
     when:
       event: [ tag ]
       branch: [ refs/tags/* ]
+      local: false
 
-  docker:
+  publish_latest:
     image: plugins/docker
     repo: ${DRONE_REPO}
     tags: [ 'latest' ]
+    secrets: [ docker_username, docker_password ]
     when:
       event: [ push ]
       branch: [ master ]
+      local: false
 
-  github:
+  release:
     image: plugins/github-release
+    secrets: [ github_token ]
     files:
       - dist/release/*
     when:
       event: [ tag ]
       branch: [ refs/tags/* ]
-
-  # rebuild the cache on the sftp server
-  rebuild_cache:
-    image: appleboy/drone-sftp-cache
-    pull: true
-    rebuild: true
-    mount: [ .glide, vendor ]
-    ignore_branch: true
-    when:
-      branch: master
+      local: false
