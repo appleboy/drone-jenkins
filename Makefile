@@ -31,6 +31,7 @@ all: build
 
 fmt:
 	$(GOFILES) | xargs $(GOFMT) -w
+
 vet:
 	go vet $(PACKAGES)
 
