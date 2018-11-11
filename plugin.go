@@ -50,7 +50,9 @@ func (p Plugin) Exec() error {
 	jenkins := NewJenkins(auth, p.BaseURL)
 
 	for _, value := range jobs {
-		jenkins.trigger(value, nil)
+		if err := jenkins.trigger(value, nil); err != nil {
+			return err
+		}
 	}
 
 	return nil
