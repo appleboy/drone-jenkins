@@ -88,7 +88,6 @@ pipeline:
       - dist/release/*
     when:
       event: [ tag ]
-      branch: [ refs/tags/* ]
       local: false
 
   publish_linux_amd64:
