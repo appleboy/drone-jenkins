@@ -1,6 +1,6 @@
 workspace:
-  base: /srv/app
-  path: src/github.com/appleboy/drone-jenkins
+  base: /go
+  path: src/github.com/appleboy/drone-gitlab-ci
 
 clone:
   git:
@@ -9,56 +9,75 @@ clone:
     tags: true
 
 pipeline:
-  test:
-    image: appleboy/golang-testing
+  lint:
+    image: golang:1.11
     pull: true
-    environment:
-      TAGS: netgo
-      GOPATH: /srv/app
-    secrets: [ codecov_token ]
+    group: test
     commands:
       - make vet
       - make lint
+      - make test-vendor
+      - make misspell-check
+
+  test:
+    image: golang:1.11
+    pull: true
+    group: test
+    commands:
       - make test
       - make coverage
-      - make build
-      # build binary for docker image
-      - make static_build
-    when:
-      event: [ push, tag, pull_request ]
 
-  publish_latest:
-    image: plugins/docker
-    repo: ${DRONE_REPO}
-    tags: [ 'latest' ]
-    secrets: [ docker_username, docker_password ]
+  # build_linux_amd64_with_module:
+  #   image: golang:1.11
+  #   pull: true
+  #   group: build
+  #   environment:
+  #     GO111MODULE: "on"
+  #   commands:
+  #     - make build_linux_amd64
+
+  build_linux_amd64:
+    image: golang:1.11
+    pull: true
+    group: build
+    commands:
+      - make build_linux_amd64
+
+  build_linux_i386:
+    image: golang:1.11
+    pull: true
+    group: build
+    commands:
+      - make build_linux_i386
+
+  build_linux_arm64:
+    image: golang:1.11
+    pull: true
+    group: build
+    commands:
+      - make build_linux_arm64
+
+  build_linux_arm:
+    image: golang:1.11
+    pull: true
+    group: build
+    commands:
+      - make build_linux_arm
+
+  codecov:
+    image: robertstettner/drone-codecov
+    secrets: [ codecov_token ]
     when:
-      event: [ push ]
-      branch: [ master ]
-      local: false
+      event: [ push, pull_request ]
+      status: [ success ]
 
   release:
-    image: appleboy/golang-testing
+    image: golang:1.11
     pull: true
-    environment:
-      TAGS: netgo
-      GOPATH: /srv/app
     commands:
       - make release
     when:
       event: [ tag ]
-      branch: [ refs/tags/* ]
-      local: false
-
-  publish_tag:
-    image: plugins/docker
-    repo: ${DRONE_REPO}
-    tags: [ '${DRONE_TAG}' ]
-    secrets: [ docker_username, docker_password ]
-    group: release
-    when:
-      event: [ tag ]
-      branch: [ refs/tags/* ]
       local: false
 
   release_tag:
@@ -72,10 +91,66 @@ pipeline:
       branch: [ refs/tags/* ]
       local: false
 
-  facebook:
-    image: appleboy/drone-facebook
-    secrets: [ fb_page_token, fb_verify_token ]
+  publish_linux_amd64:
+    image: plugins/docker:17.12
+    group: release
     pull: true
-    to: 1234973386524610
+    repo: ${DRONE_REPO}
+    secrets: [ docker_username, docker_password ]
+    auto_tag: true
+    auto_tag_suffix: linux-amd64
     when:
-      status: [ changed, failure ]
+      event: [ push, tag ]
+      local: false
+
+  publish_alpine:
+    image: plugins/docker:17.12
+    group: release
+    pull: true
+    dockerfile: Dockerfile.alpine
+    secrets: [ docker_username, docker_password ]
+    auto_tag: true
+    auto_tag_suffix: linux-alpine
+    repo: ${DRONE_REPO}
+    when:
+      event: [ push, tag ]
+      local: false
+
+  publish_linux_i386:
+    image: plugins/docker:17.12
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    group: release
+    repo: ${DRONE_REPO}
+    auto_tag: true
+    auto_tag_suffix: linux-i386
+    dockerfile: Dockerfile.i386
+    when:
+      event: [ push, tag ]
+      local: false
+
+  publish_linux_arm64:
+    image: plugins/docker:17.12
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    group: release
+    repo: ${DRONE_REPO}
+    auto_tag: true
+    auto_tag_suffix: linux-arm64
+    dockerfile: Dockerfile.arm64
+    when:
+      event: [ push, tag ]
+      local: false
+
+  publish_linux_arm:
+    image: plugins/docker:17.12
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    group: release
+    repo: ${DRONE_REPO}
+    auto_tag: true
+    auto_tag_suffix: linux-arm
+    dockerfile: Dockerfile.arm
+    when:
+      event: [ push, tag ]
+      local: false
