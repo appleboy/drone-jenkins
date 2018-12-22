@@ -114,7 +114,7 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
 
-	fmt.Println("sent a request to %q", path)
+	fmt.Printf("sent a request to %q\n", path)
 
 	return jenkins.post(path, params, nil)
 }
