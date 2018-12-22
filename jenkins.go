@@ -49,6 +49,11 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
 
+// for jenkins you need a CSRF token :-(      
+// GET https://SERVER/crumbIssuer/api/xml?token=VALUE&xpath=at(//crumbRequestField,":",//crumb)
+// LOAD + SPLIT + ADD HEADER ++ CALL API
+// POST https://SERVER/job/NAME/build   
+
 	var xsrfIdentifier string
 	var xsrfValue string
 	
@@ -109,7 +114,7 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
 
-    fmt.Println("sent a request to %q", path)
+	fmt.Println("sent a request to %q", path)
 
 	return jenkins.post(path, params, nil)
 }
