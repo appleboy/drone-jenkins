@@ -56,6 +56,9 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 
 	var xsrfIdentifier string
 	var xsrfValue string
+
+	xsrfIdentifier = "XSRF"
+	xsrfValue = "BLAA"
 	
 	req.Header.Set(xsrfIdentifier, xsrfValue)
 
@@ -114,7 +117,7 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
 
-	fmt.Printf("sent a request to %q\n", path)
+	fmt.Printf("send a request to %q\n", path)
 
 	return jenkins.post(path, params, nil)
 }
