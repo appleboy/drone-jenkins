@@ -48,6 +48,12 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	if jenkins.Auth != nil {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
+
+	var xsrfIdentifier string
+	var xsrfValue string
+	
+	req.Header.Set(xsrfIdentifier, xsrfValue)
+
 	return http.DefaultClient.Do(req)
 }
 
@@ -102,6 +108,8 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
+
+    fmt.Println("sent a request to %q", path)
 
 	return jenkins.post(path, params, nil)
 }
