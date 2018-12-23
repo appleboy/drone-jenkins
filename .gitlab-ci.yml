@@ -1,5 +1,5 @@
 # This file is a template, and might need editing before it works on your project.
-image: golang:latest
+image: golang:1.11
 
 variables:
   # Please edit to your GitLab project
@@ -20,17 +20,21 @@ stages:
     - test
     - build
 
-format:
+lint:
     stage: test
     script:
-      - go fmt $(go list ./... | grep -v /vendor/)
-      - go vet $(go list ./... | grep -v /vendor/)
-      - go test -race $(go list ./... | grep -v /vendor/)
+      - make vet
+      - make lint
+      - make test-vendor
+      - make misspell-check
 
-compile:
+test:
+    stage: test
+    script:
+      - make test
+      - make coverage
+
+build_linux_amd64:
     stage: build
     script:
-      - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/mybinary
-    artifacts:
-      paths:
-        - mybinary
+      - make build_linux_amd64
