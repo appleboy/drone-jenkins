@@ -16,6 +16,13 @@ type (
 		Token    string
 	}
 
+	// XSRF contain header name and value
+	////"xpath=at(//crumbRequestField,\":\",//crumb)"
+	Crumb struct {
+		crumbRequestField string
+		crumb string
+	}
+
 	// Jenkins contain Auth and BaseURL
 	Jenkins struct {
 		Auth    *Auth
@@ -49,19 +56,6 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
 
-// for jenkins you need a CSRF token :-(      
-// GET https://SERVER/crumbIssuer/api/xml?token=VALUE&xpath=at(//crumbRequestField,":",//crumb)
-// LOAD + SPLIT + ADD HEADER ++ CALL API
-// POST https://SERVER/job/NAME/build   
-
-	var xsrfIdentifier string
-	var xsrfValue string
-
-	xsrfIdentifier = "XSRF"
-	xsrfValue = "BLAA"
-	
-	req.Header.Set(xsrfIdentifier, xsrfValue)
-
 	return http.DefaultClient.Do(req)
 }
 
@@ -80,12 +74,37 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 	return json.Unmarshal(data, body)
 }
 
-func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (err error) {
+func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
+	// call the json endpoint of jenkins API for the XSRF Token
+	requestURL := jenkins.buildURL("crumbIssuer/api/json", nil)
+	
+
+	req, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	resp, err := jenkins.sendRequest(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	return jenkins.parseResponse(resp, body)
+}
+
+func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, Crumb jenkinsCrumb) (err error) {
 	requestURL := jenkins.buildURL(path, params)
 	req, err := http.NewRequest("POST", requestURL, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+
+	// if exists add the XSRF token as header to the POST request
+	if jenkinsCrumb != nil {
+		req.Header.Set(jenkinsCrumb.crumbRequestField, jenkinsCrumb.crumb)
 	}
 
 	resp, err := jenkins.sendRequest(req)
@@ -117,7 +136,18 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
 
+	// load XSRF token the the following trigger request
+	var animals []Crumb
+	err = jenkins.loadXSRFtoken(&animals)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Printf("%+v", animals)
+
+	//set token object to the jenkins as child
+	var jenkinsCrumb Crumb
+
 	fmt.Printf("send a request to %q\n", path)
 
-	return jenkins.post(path, params, nil)
+	return jenkins.post(path, params, nil, jenkinsCrumb)
 }
