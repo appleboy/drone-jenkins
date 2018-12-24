@@ -2,7 +2,7 @@ image: golang:1.11
 
 variables:
   # Please edit to your GitLab project
-  REPO_NAME: github.com/appleboy/drone-gitlab-ci
+  REPO_NAME: github.com/appleboy/drone-jenkins
 
 # The problem is that to be able to use go get, one needs to put
 # the repository in the $GOPATH. So for example if your gitlab domain

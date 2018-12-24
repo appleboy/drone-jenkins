@@ -1,6 +1,6 @@
 workspace:
   base: /go
-  path: src/github.com/appleboy/drone-gitlab-ci
+  path: src/github.com/appleboy/drone-jenkins
 
 clone:
   git:
