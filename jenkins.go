@@ -135,6 +135,8 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
 
+	fmt.Printf("start to load the XSRF token \n")
+
 	// load XSRF token the the following trigger request
 	var animals []Crumb
 	err := jenkins.loadXSRFtoken(&animals)
@@ -143,10 +145,13 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	}
 	fmt.Printf("%+v", animals)
 
+	fmt.Printf("end to load the XSRF token \n")
+
 	//set token object to the jenkins as child
-	var jenkinsCrumb Crumb
+	//var jenkinsCrumb Crumb
+	//crumpPointer := &jenkinsCrumb
 
 	fmt.Printf("send a request to %q\n", path)
 
-	return jenkins.post(path, params, nil, &jenkinsCrumb)
+	return jenkins.post(path, params, nil, nil)
 }
