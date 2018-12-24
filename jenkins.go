@@ -20,7 +20,7 @@ type (
 	////"xpath=at(//crumbRequestField,\":\",//crumb)"
 	Crumb struct {
 		crumbRequestField string
-		crumb string
+		crumb             string
 	}
 
 	// Jenkins contain Auth and BaseURL
@@ -77,7 +77,6 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 	// call the json endpoint of jenkins API for the XSRF Token
 	requestURL := jenkins.buildURL("crumbIssuer/api/json", nil)
-	
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
@@ -94,7 +93,7 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 	return jenkins.parseResponse(resp, body)
 }
 
-func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, Crumb jenkinsCrumb) (err error) {
+func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, jenkinsCrumb *Crumb) (err error) {
 	requestURL := jenkins.buildURL(path, params)
 	req, err := http.NewRequest("POST", requestURL, nil)
 	if err != nil {
@@ -138,7 +137,7 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 
 	// load XSRF token the the following trigger request
 	var animals []Crumb
-	err = jenkins.loadXSRFtoken(&animals)
+	err := jenkins.loadXSRFtoken(&animals)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
@@ -149,5 +148,5 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 
 	fmt.Printf("send a request to %q\n", path)
 
-	return jenkins.post(path, params, nil, jenkinsCrumb)
+	return jenkins.post(path, params, nil, &jenkinsCrumb)
 }
