@@ -16,17 +16,16 @@ type (
 		Token    string
 	}
 
-	// XSRF contain header name and value
-	////"xpath=at(//crumbRequestField,\":\",//crumb)"
-	Crumb struct {
-		crumbRequestField string
-		crumb             string
-	}
-
 	// Jenkins contain Auth and BaseURL
 	Jenkins struct {
 		Auth    *Auth
 		BaseURL string
+	}
+
+	// Crumb contain the jenkins XSRF token header-name and header-value
+	Crumb struct {
+		crumbRequestField string
+		crumb             string
 	}
 )
 
@@ -103,7 +102,7 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, j
 
 	// if exists add the XSRF token as header to the POST request
 	if jenkinsCrumb != nil {
-		fmt.Printf("add XSR header to a request\n")
+		fmt.Printf("add XSR token header to a request\n")
 		req.Header.Set(jenkinsCrumb.crumbRequestField, jenkinsCrumb.crumb)
 	}
 
