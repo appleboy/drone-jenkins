@@ -75,7 +75,7 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 
 func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 	// call the json endpoint of jenkins API for the XSRF Token
-	requestURL := jenkins.buildURL("crumbIssuer/api/json", nil)
+	requestURL := jenkins.buildURL("/crumbIssuer/api/json", nil)
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
