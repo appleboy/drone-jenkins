@@ -103,6 +103,7 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, j
 
 	// if exists add the XSRF token as header to the POST request
 	if jenkinsCrumb != nil {
+		fmt.Printf("add XSR header to a request\n")
 		req.Header.Set(jenkinsCrumb.crumbRequestField, jenkinsCrumb.crumb)
 	}
 
