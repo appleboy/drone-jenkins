@@ -79,13 +79,13 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error by create NewRequest:", err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error by sendRequest:", err)
 		return
 	}
 
@@ -141,7 +141,7 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	var animals []Crumb
 	err := jenkins.loadXSRFtoken(&animals)
 	if err != nil {
-		fmt.Println("error:", err)
+		fmt.Println("error by load XSRF token:", err)
 	}
 	fmt.Printf("%+v", animals)
 
