@@ -145,6 +145,8 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	}
 	fmt.Printf("%+v", animals)
 
+	fmt.Printf("len=%d cap=%d \n", len(animals), cap(animals))
+
 	fmt.Printf("end to load the XSRF token \n")
 
 	//set token object to the jenkins as child
