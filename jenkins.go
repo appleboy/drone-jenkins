@@ -147,6 +147,12 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 
 	fmt.Printf("len=%d cap=%d \n", len(animals), cap(animals))
 
+	var jenkinsCrumb Crumb
+
+	if len(animals) == 1 {
+		jenkinsCrumb = animals[0]
+	}
+
 	fmt.Printf("end to load the XSRF token \n")
 
 	//set token object to the jenkins as child
@@ -155,5 +161,5 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 
 	fmt.Printf("send a request to %q\n", path)
 
-	return jenkins.post(path, params, nil, nil)
+	return jenkins.post(path, params, nil, &jenkinsCrumb)
 }
