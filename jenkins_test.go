@@ -22,8 +22,8 @@ func TestParseJobPath(t *testing.T) {
 
 func TestUnSupportProtocol(t *testing.T) {
 	auth := &Auth{
-		Username: "foo",
-		Token:    "bar",
+		Username: "admin",
+		Token:    "1148e37e0d2a18296cd25e4e9ebdbfa3cc",
 	}
 	jenkins := NewJenkins(auth, "example.com")
 
@@ -33,11 +33,11 @@ func TestUnSupportProtocol(t *testing.T) {
 
 func TestTriggerBuild(t *testing.T) {
 	auth := &Auth{
-		Username: "foo",
-		Token:    "bar",
+		Username: "admin",
+		Token:    "1148e37e0d2a18296cd25e4e9ebdbfa3cc",
 	}
-	jenkins := NewJenkins(auth, "http://example.com")
+	jenkins := NewJenkins(auth, "http://localhost:8080")
 
-	err := jenkins.trigger("drone-jenkins", url.Values{"token": []string{"bar"}})
+	err := jenkins.trigger("drone-jenkins", url.Values{"token": []string{"1148e37e0d2a18296cd25e4e9ebdbfa3cc"}})
 	assert.Nil(t, err)
 }
