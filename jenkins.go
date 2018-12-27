@@ -24,8 +24,9 @@ type (
 
 	// Crumb contain the jenkins XSRF token header-name and header-value
 	Crumb struct {
-		crumbRequestField string
-		crumb             string
+		Class             string `json:"_class"`
+		Crumb             string `json:"crumb"`
+		CrumbRequestField string `json:"crumbRequestField"`
 	}
 )
 
@@ -70,6 +71,9 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 		return
 	}
 
+	// for debug if you would like to show the raw json data
+	fmt.Printf("trace - parseResponse - raw data: %s \n", data)
+
 	return json.Unmarshal(data, body)
 }
 
@@ -79,13 +83,13 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		fmt.Println("error by create NewRequest:", err)
+		fmt.Println("debug - loadXSRFtoken - error by create NewRequest:", err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println("error by sendRequest:", err)
+		fmt.Println("debug - loadXSRFtoken - error by sendRequest:", err)
 		return
 	}
 
@@ -102,10 +106,13 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, j
 
 	// if exists add the XSRF token as header to the POST request
 	if jenkinsCrumb != nil {
-		fmt.Printf("add XSR token header to a request\n")
-		req.Header.Set(jenkinsCrumb.crumbRequestField, jenkinsCrumb.crumb)
+		if len(jenkinsCrumb.Class) > 0 {
+			fmt.Printf("trace - post - add XSR token header to a request\n")
+			req.Header.Set(jenkinsCrumb.CrumbRequestField, jenkinsCrumb.Crumb)
+		}
 	}
 
+	fmt.Printf("trace - post - send a request to %q\n", path)
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
 		fmt.Println(err)
@@ -134,32 +141,15 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
+	fmt.Printf("trace - trigger - set job path to %q\n", path)
 
-	fmt.Printf("start to load the XSRF token \n")
-
-	// load XSRF token the the following trigger request
-	var animals []Crumb
-	err := jenkins.loadXSRFtoken(&animals)
+	// load XSRF token for the following POST request
+	jenkinsCrumb := Crumb{}
+	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
 	if err != nil {
-		fmt.Println("error by load XSRF token:", err)
+		fmt.Println("debug - trigger - error by load XSRF token:", err)
 	}
-	fmt.Printf("%+v", animals)
-
-	fmt.Printf("len=%d cap=%d \n", len(animals), cap(animals))
-
-	var jenkinsCrumb Crumb
-
-	if len(animals) == 1 {
-		jenkinsCrumb = animals[0]
-	}
-
-	fmt.Printf("end to load the XSRF token \n")
-
-	//set token object to the jenkins as child
-	//var jenkinsCrumb Crumb
-	//crumpPointer := &jenkinsCrumb
-
-	fmt.Printf("send a request to %q\n", path)
+	fmt.Printf("trace - trigger - jenkinsCrumb: %+v \n", jenkinsCrumb)
 
 	return jenkins.post(path, params, nil, &jenkinsCrumb)
 }
