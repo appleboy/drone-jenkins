@@ -15,6 +15,8 @@ pipeline:
     detach: true
     environment:
       JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
+    commands:
+      - ls -lisa
       
   lint:
     image: golang:1.11
