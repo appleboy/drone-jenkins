@@ -153,3 +153,9 @@ pipeline:
     when:
       event: [ push, tag ]
       local: false
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    volumes: 
+      - ./jenkins_data:/var/jenkins_home
