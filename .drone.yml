@@ -157,5 +157,5 @@ pipeline:
 services:
   jenkins:
     image: jenkins/jenkins:lts
-    volumes: 
-      - /jenkins_data:/var/jenkins_home
+    environment:
+      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data
