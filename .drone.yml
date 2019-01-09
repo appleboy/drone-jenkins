@@ -158,4 +158,4 @@ services:
   jenkins:
     image: jenkins/jenkins:lts
     environment:
-      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data
+      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
