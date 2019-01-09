@@ -158,4 +158,4 @@ services:
   jenkins:
     image: jenkins/jenkins:lts
     volumes: 
-      - ./jenkins_data:/var/jenkins_home
+      - /jenkins_data:/var/jenkins_home
