@@ -1,7 +1,7 @@
 test-jenkins:
-  image: jenkins:lts
+  image: jenkins/jenkins:lts
   ports:
     - "50000:50000"
     - "8080:8080"
   volumes:
-    - /jenkins_data:/var/jenkins_home
+    - ./jenkins_data:/var/jenkins_home
