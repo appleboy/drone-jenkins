@@ -9,6 +9,13 @@ clone:
     tags: true
 
 pipeline:
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    detach: true
+    environment:
+      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
+      
   lint:
     image: golang:1.11
     pull: true
@@ -153,9 +160,3 @@ pipeline:
     when:
       event: [ push, tag ]
       local: false
-
-services:
-  jenkins:
-    image: jenkins/jenkins:lts
-    environment:
-      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
