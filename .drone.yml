@@ -32,6 +32,12 @@ pipeline:
       - make lint
       - make test-vendor
       - make misspell-check
+      
+  jenkins_ping:
+    image: ubuntu:18.04
+    commands:
+      - sleep 15
+      - curl http://jenkins:8080
 
   test:
     image: golang:1.11
