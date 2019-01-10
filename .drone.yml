@@ -34,7 +34,7 @@ pipeline:
       - make misspell-check
       
   jenkins_ping:
-    image: ubuntu:18.04
+    image: buildpack-deps:stretch-curl
     commands:
       - sleep 15
       - curl http://jenkins:8080
