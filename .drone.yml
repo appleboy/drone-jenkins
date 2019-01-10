@@ -11,7 +11,7 @@ clone:
 pipeline:
 
   file_ower:
-    image: unbuntu
+    image: ubuntu:18.04
     commands:
       - chown -R 1000:1000 /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
       - cd /go/src/github.com/appleboy/drone-jenkins/jenkins_service/
