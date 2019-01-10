@@ -10,12 +10,11 @@ clone:
 
 pipeline:
 
-  file_ower:
+  change_file_ower_for_jenkins:
     image: ubuntu:18.04
     commands:
+      # on my ci server the user jenkins inside the jenkins image has the UID 1000 and GID 1000 (id -u / id -g)
       - chown -R 1000:1000 /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
-      - cd /go/src/github.com/appleboy/drone-jenkins/jenkins_service/
-      - ls -lisa
 
   jenkins:
     image: jenkins/jenkins:lts
