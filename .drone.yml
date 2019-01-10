@@ -10,16 +10,18 @@ clone:
 
 pipeline:
 
+  file_ower
+    image: unbuntu
+    commands:
+      - chown -R 1000:1000 /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
+      - cd /go/src/github.com/appleboy/drone-jenkins/jenkins_service/
+      - ls -lisa
+
   jenkins:
     image: jenkins/jenkins:lts
     detach: true
     environment:
       JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
-    commands:
-      - id
-      - id -u
-      - id -g
-      - ls -lisa
       
   lint:
     image: golang:1.11
