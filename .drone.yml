@@ -10,7 +10,7 @@ clone:
 
 pipeline:
 
-  file_ower
+  file_ower:
     image: unbuntu
     commands:
       - chown -R 1000:1000 /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
