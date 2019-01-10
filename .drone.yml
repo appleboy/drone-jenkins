@@ -16,9 +16,6 @@ pipeline:
     user: root
     environment:
       JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
-    commands:
-      - echo $UID
-      - ls -lisa
       
   lint:
     image: golang:1.11
