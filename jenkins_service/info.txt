@@ -1,0 +1,6 @@
+
+job 		demo-job
+
+user 		admin
+pwd 		admin
+token 		117caafd2840748c41157c445762d07624
