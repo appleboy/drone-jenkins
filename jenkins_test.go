@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/stretchr/testify/assert"
 
 	"net/url"
@@ -23,7 +25,7 @@ func TestParseJobPath(t *testing.T) {
 func TestUnSupportProtocol(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "1148e37e0d2a18296cd25e4e9ebdbfa3cc",
+		Token:    "117caafd2840748c41157c445762d07624",
 	}
 	jenkins := NewJenkins(auth, "example.com")
 
@@ -34,10 +36,39 @@ func TestUnSupportProtocol(t *testing.T) {
 func TestTriggerBuild(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "1148e37e0d2a18296cd25e4e9ebdbfa3cc",
+		Token:    "117caafd2840748c41157c445762d07624",
 	}
 	jenkins := NewJenkins(auth, "http://localhost:8080")
 
-	err := jenkins.trigger("drone-jenkins", url.Values{"token": []string{"1148e37e0d2a18296cd25e4e9ebdbfa3cc"}})
+	err := jenkins.trigger("demo-job", url.Values{"token": []string{"117caafd2840748c41157c445762d07624"}})
+	assert.Nil(t, err)
+}
+
+func TestTriggerBuild2(t *testing.T) {
+	auth := &Auth{
+		Username: "admin",
+		Token:    "117caafd2840748c41157c445762d07624",
+	}
+	jenkins := NewJenkins(auth, "http://localhost:8080")
+
+	err := jenkins.trigger("MyFolder/drone-jenkins", url.Values{"token": []string{"117caafd2840748c41157c445762d07624"}})
+	assert.Nil(t, err)
+}
+
+func TestLoadXSRFToken(t *testing.T) {
+	auth := &Auth{
+		Username: "admin",
+		Token:    "117caafd2840748c41157c445762d07624",
+	}
+	jenkins := NewJenkins(auth, "http://localhost:8080")
+
+	// load XSRF token for the following POST request
+	jenkinsCrumb := Crumb{}
+	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
+	if err != nil {
+		fmt.Println("debug - trigger - error by load XSRF token:", err)
+	}
+	fmt.Printf("trace - trigger - jenkinsCrumb: %+v \n", jenkinsCrumb)
+
 	assert.Nil(t, err)
 }
