@@ -9,6 +9,19 @@ clone:
     tags: true
 
 pipeline:
+
+  change_file_ower_for_jenkins:
+    image: ubuntu:18.04
+    commands:
+      # on my ci server the user jenkins inside the jenkins image has the UID 1000 and GID 1000 (id -u / id -g)
+      - chown -R 1000:1000 /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    detach: true
+    environment:
+      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
+      
   lint:
     image: golang:1.11
     pull: true
@@ -18,6 +31,12 @@ pipeline:
       - make lint
       - make test-vendor
       - make misspell-check
+      
+  jenkins_ping:
+    image: buildpack-deps:stretch-curl
+    commands:
+      - sleep 15
+      - curl http://jenkins:8080
 
   test:
     image: golang:1.11
