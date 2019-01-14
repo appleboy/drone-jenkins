@@ -66,9 +66,9 @@ func TestLoadXSRFToken(t *testing.T) {
 	jenkinsCrumb := Crumb{}
 	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
 	if err != nil {
-		fmt.Println("debug - trigger - error by load XSRF token:", err)
+		fmt.Println("warn - error by load XSRF token:", err)
 	}
-	fmt.Printf("trace - trigger - jenkinsCrumb: %+v \n", jenkinsCrumb)
+	fmt.Printf("info - load jenkinsCrumb: %+v \n", jenkinsCrumb)
 
 	assert.Nil(t, err)
 }
