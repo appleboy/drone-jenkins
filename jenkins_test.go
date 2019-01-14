@@ -60,7 +60,7 @@ func TestLoadXSRFToken(t *testing.T) {
 		Username: "admin",
 		Token:    "117caafd2840748c41157c445762d07624",
 	}
-	jenkins := NewJenkins(auth, "http://localhost:8080")
+	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
 	// load XSRF token for the following POST request
 	jenkinsCrumb := Crumb{}
