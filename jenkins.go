@@ -83,13 +83,13 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		fmt.Println("debug - loadXSRFtoken - error by create NewRequest:", err)
+		fmt.Println("warn - loadXSRFtoken - error by create NewRequest:", err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println("debug - loadXSRFtoken - error by sendRequest:", err)
+		fmt.Println("warn - loadXSRFtoken - error by sendRequest:", err)
 		return
 	}
 
@@ -100,22 +100,22 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, j
 	requestURL := jenkins.buildURL(path, params)
 	req, err := http.NewRequest("POST", requestURL, nil)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("warn - post - error by create NewRequest:", err)
 		return
 	}
 
 	// if exists add the XSRF token as header to the POST request
 	if jenkinsCrumb != nil {
 		if len(jenkinsCrumb.Class) > 0 {
-			fmt.Printf("trace - post - add XSR token header to a request\n")
+			fmt.Printf("info - add an XSRF token header to a POST request\n")
 			req.Header.Set(jenkinsCrumb.CrumbRequestField, jenkinsCrumb.Crumb)
 		}
 	}
 
-	fmt.Printf("trace - post - send a request to %q\n", path)
+	fmt.Printf("info - send a POST request to %q\n", path)
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("warn - post - error by sendRequest:", err)
 		return
 	}
 
@@ -141,15 +141,15 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
-	fmt.Printf("trace - trigger - set job path to %q\n", path)
+	fmt.Printf("info - set api job path to %q\n", path)
 
 	// load XSRF token for the following POST request
 	jenkinsCrumb := Crumb{}
 	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
 	if err != nil {
-		fmt.Println("debug - trigger - error by load XSRF token:", err)
+		fmt.Println("warn - trigger - error by load XSRF token:", err)
 	}
-	fmt.Printf("trace - trigger - jenkinsCrumb: %+v \n", jenkinsCrumb)
+	fmt.Printf("info - load jenkinsCrumb: %+v \n", jenkinsCrumb)
 
 	return jenkins.post(path, params, nil, &jenkinsCrumb)
 }
