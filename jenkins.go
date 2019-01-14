@@ -83,13 +83,13 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		fmt.Println("warn - loadXSRFtoken - error by create NewRequest:", err)
+		fmt.Println("trace - loadXSRFtoken - error by create NewRequest:", err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println("warn - loadXSRFtoken - error by sendRequest:", err)
+		fmt.Println("trace - loadXSRFtoken - error by sendRequest:", err)
 		return
 	}
 
@@ -147,9 +147,9 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	jenkinsCrumb := Crumb{}
 	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
 	if err != nil {
-		fmt.Println("warn - trigger - error by load XSRF token:", err)
+		fmt.Println("info - could not load an XSRF token:", err)
 	}
-	fmt.Printf("info - load jenkinsCrumb: %+v \n", jenkinsCrumb)
+	fmt.Printf("trace - load jenkinsCrumb: %+v \n", jenkinsCrumb)
 
 	return jenkins.post(path, params, nil, &jenkinsCrumb)
 }
