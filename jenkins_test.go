@@ -38,7 +38,7 @@ func TestTriggerBuild(t *testing.T) {
 		Username: "admin",
 		Token:    "117caafd2840748c41157c445762d07624",
 	}
-	jenkins := NewJenkins(auth, "http://localhost:8080")
+	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
 	err := jenkins.trigger("demo-job", url.Values{"token": []string{"117caafd2840748c41157c445762d07624"}})
 	assert.Nil(t, err)
@@ -49,7 +49,7 @@ func TestTriggerBuild2(t *testing.T) {
 		Username: "admin",
 		Token:    "117caafd2840748c41157c445762d07624",
 	}
-	jenkins := NewJenkins(auth, "http://localhost:8080")
+	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
 	err := jenkins.trigger("MyFolder/drone-jenkins", url.Values{"token": []string{"117caafd2840748c41157c445762d07624"}})
 	assert.Nil(t, err)
