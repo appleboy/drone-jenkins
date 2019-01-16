@@ -1,6 +1,7 @@
 
 job 		demo-job
+			MyFolder/drone-jenkins
 
 user 		admin
 pwd 		admin
-token 		117caafd2840748c41157c445762d07624
+token 		116ba1f8950c5ddff3ab26d6f5acbc3e41

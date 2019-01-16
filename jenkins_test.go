@@ -25,7 +25,7 @@ func TestParseJobPath(t *testing.T) {
 func TestUnSupportProtocol(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "117caafd2840748c41157c445762d07624",
+		Token:    "116ba1f8950c5ddff3ab26d6f5acbc3e41",
 	}
 	jenkins := NewJenkins(auth, "example.com")
 
@@ -36,7 +36,7 @@ func TestUnSupportProtocol(t *testing.T) {
 func TestTriggerBuild(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "117caafd2840748c41157c445762d07624",
+		Token:    "116ba1f8950c5ddff3ab26d6f5acbc3e41",
 	}
 	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
@@ -47,7 +47,7 @@ func TestTriggerBuild(t *testing.T) {
 func TestTriggerBuild2(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "117caafd2840748c41157c445762d07624",
+		Token:    "116ba1f8950c5ddff3ab26d6f5acbc3e41",
 	}
 	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
@@ -58,7 +58,7 @@ func TestTriggerBuild2(t *testing.T) {
 func TestLoadXSRFToken(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "117caafd2840748c41157c445762d07624",
+		Token:    "116ba1f8950c5ddff3ab26d6f5acbc3e41",
 	}
 	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
