@@ -119,6 +119,11 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, j
 		return
 	}
 
+	// POST return the Location to the new Job
+	// https://github.com/jenkinsci/parameterized-remote-trigger-plugin
+	// https://wiki.jenkins.io/display/JENKINS/Parameterized+Remote+Trigger+Plugin
+	var locationHeader string = resp.Header.Get("Location")
+
 	return jenkins.parseResponse(resp, body)
 }
 
