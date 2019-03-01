@@ -1,4 +1,4 @@
-<img src="logo.png">
+<img src="images/logo.png">
 
 # drone-jenkins
 
@@ -46,9 +46,14 @@ docker: Error response from daemon: Container command
 
 There are three ways to trigger jenkins jobs.
 
-* [usage from binary](#usage-from-binary)
-* [usage from docker](#usage-from-docker)
-* [usage from drone ci](#usage-from-drone-ci)
+- [drone-jenkins](#drone-jenkins)
+  - [Build or Download a binary](#build-or-download-a-binary)
+  - [Docker](#docker)
+  - [Usage](#usage)
+    - [Usage from binary](#usage-from-binary)
+    - [Usage from docker](#usage-from-docker)
+    - [Usage from drone ci](#usage-from-drone-ci)
+  - [Testing](#testing)
 
 <a name="usage-from-binary"></a>
 ### Usage from binary

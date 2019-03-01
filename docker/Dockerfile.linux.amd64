@@ -1,9 +1,10 @@
-FROM microsoft/nanoserver:10.0.14393.1884
+FROM plugins/base:linux-amd64
 
 LABEL maintainer="Bo-Yi Wu <appleboy.tw@gmail.com>" \
   org.label-schema.name="Drone Jenkins" \
   org.label-schema.vendor="Bo-Yi Wu" \
   org.label-schema.schema-version="1.0"
 
-ADD release/drone-jenkins.exe /drone-jenkins.exe
-ENTRYPOINT [ "\\drone-jenkins.exe" ]
+ADD release/linux/amd64/drone-jenkins /bin/
+
+ENTRYPOINT ["/bin/drone-jenkins"]
