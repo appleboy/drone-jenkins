@@ -16,7 +16,7 @@ type (
 )
 
 func trimElement(keys []string) []string {
-	var newKeys []string
+	newKeys := []string{}
 
 	for _, value := range keys {
 		value = strings.Trim(value, " ")
@@ -49,8 +49,8 @@ func (p Plugin) Exec() error {
 
 	jenkins := NewJenkins(auth, p.BaseURL)
 
-	for _, value := range jobs {
-		if err := jenkins.trigger(value, nil); err != nil {
+	for _, v := range jobs {
+		if err := jenkins.trigger(v, nil); err != nil {
 			return err
 		}
 	}

@@ -16,7 +16,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "jenkins plugin"
 	app.Usage = "trigger jenkins jobs"
-	app.Copyright = "Copyright (c) 2017 Bo-Yi Wu"
+	app.Copyright = "Copyright (c) 2019 Bo-Yi Wu"
 	app.Authors = []cli.Author{
 		{
 			Name:  "Bo-Yi Wu",
