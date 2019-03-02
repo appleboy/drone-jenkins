@@ -11,6 +11,21 @@
 
 [Drone](https://github.com/drone/drone) plugin for trigger [Jenkins](https://jenkins.io/) jobs.
 
+## Setup the Jenkins Server
+
+Using the docker command:
+
+```sh
+$ docker run \
+  --name jenkins \
+  -d --restart always \
+  -p 8080:8080 -p 50000:50000 \
+  -v /data/jenkins:/var/jenkins_home \
+  jenkins/jenkins:lts
+```
+
+Please make sure that you create the `/data/jenkins` before starting the Jenkins.
+
 ## Build or Download a binary
 
 The pre-compiled binaries can be downloaded from [release page](https://github.com/appleboy/drone-jenkins/releases). Support the following OS type.
@@ -52,6 +67,7 @@ docker: Error response from daemon: Container command
 There are three ways to trigger jenkins jobs.
 
 - [drone-jenkins](#drone-jenkins)
+  - [Setup the Jenkins Server](#setup-the-jenkins-server)
   - [Build or Download a binary](#build-or-download-a-binary)
   - [Docker](#docker)
   - [Usage](#usage)
