@@ -13,7 +13,7 @@
 
 ## Setup the Jenkins Server
 
-Using the docker command:
+Setup the Jenkins server using the docker command:
 
 ```sh
 $ docker run \
@@ -24,7 +24,9 @@ $ docker run \
   jenkins/jenkins:lts
 ```
 
-Please make sure that you create the `/data/jenkins` before starting the Jenkins.
+Please make sure that you create the `/data/jenkins` before starting the Jenkins. Create the new API token as below:
+
+<img src="images/jenkins-token.png">
 
 ## Build or Download a binary
 
