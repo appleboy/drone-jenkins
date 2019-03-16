@@ -39,10 +39,10 @@ func NewJenkins(auth *Auth, url string) *Jenkins {
 	}
 }
 
-func (jenkins *Jenkins) buildURL(path string, params url.Values) (requestURL string) {
+func (jenkins *Jenkins) buildURL(path string, queryParams url.Values) (requestURL string) {
 	requestURL = jenkins.BaseURL + path
-	if params != nil {
-		queryString := params.Encode()
+	if queryParams != nil {
+		queryString := queryParams.Encode()
 		if queryString != "" {
 			requestURL = requestURL + "?" + queryString
 		}
@@ -96,12 +96,17 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 	return jenkins.parseResponse(resp, body)
 }
 
-func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, jenkinsCrumb *Crumb) (err error) {
-	requestURL := jenkins.buildURL(path, params)
-	req, err := http.NewRequest("POST", requestURL, nil)
+func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface{}, jenkinsCrumb *Crumb, postData *strings.Reader) (err error) {
+	requestURL := jenkins.buildURL(path, queryParams)
+
+	req, err := http.NewRequest("POST", requestURL, postData)
 	if err != nil {
 		fmt.Println("warn - post - error by create NewRequest:", err)
 		return
+	}
+
+	if postData != nil {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 
 	// if exists add the XSRF token as header to the POST request
@@ -123,8 +128,10 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}, j
 	// https://github.com/jenkinsci/parameterized-remote-trigger-plugin
 	// https://wiki.jenkins.io/display/JENKINS/Parameterized+Remote+Trigger+Plugin
 	var locationHeader string = resp.Header.Get("Location")
+	fmt.Println("HEADER Location:", locationHeader)
+	// it is a link to the queue, executable.url link to the job build
 
-	return jenkins.parseResponse(resp, body)
+	return jenkins.parseResponse(resp, body
 }
 
 func (jenkins *Jenkins) parseJobPath(job string) string {
@@ -144,7 +151,7 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 	return path
 }
 
-func (jenkins *Jenkins) trigger(job string, params url.Values) error {
+func (jenkins *Jenkins) trigger(job string, queryParams url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
 	fmt.Printf("info - set api job path to %q\n", path)
 
@@ -156,5 +163,11 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	}
 	fmt.Printf("trace - load jenkinsCrumb: %+v \n", jenkinsCrumb)
 
-	return jenkins.post(path, params, nil, &jenkinsCrumb)
+	// im demo jenkins muss noch der job dazu ins git
+	// das muss noch schöner werden hier - aber der wert kam erstmal im jenkins an - das ist gut
+	data := url.Values{}
+	data.Set("json", "{\"parameter\": [{\"name\":\"state_value\", \"value\":\"leck mich doch\"}]}")
+	postData := strings.NewReader(data.Encode())
+
+	return jenkins.post(path, queryParams, nil, &jenkinsCrumb, postData)
 }

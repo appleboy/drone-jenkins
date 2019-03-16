@@ -40,7 +40,7 @@ func TestTriggerBuild(t *testing.T) {
 	}
 	jenkins := NewJenkins(auth, "http://jenkins:8080")
 
-	err := jenkins.trigger("demo-job", url.Values{"token": []string{"117caafd2840748c41157c445762d07624"}})
+	err := jenkins.trigger("with-param", url.Values{"token": []string{"117caafd2840748c41157c445762d07624"}})
 	assert.Nil(t, err)
 }
 
