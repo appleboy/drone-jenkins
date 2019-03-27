@@ -93,6 +93,11 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 		return
 	}
 
+	if resp.StatusCode == 404 {
+		fmt.Println("info - loadXSRFtoken - XSRF is not enabled in remote jenkins")
+		return
+	}
+
 	return jenkins.parseResponse(resp, body)
 }
 
@@ -131,7 +136,7 @@ func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface
 	fmt.Println("HEADER Location:", locationHeader)
 	// it is a link to the queue, executable.url link to the job build
 
-	return jenkins.parseResponse(resp, body
+	return jenkins.parseResponse(resp, body)
 }
 
 func (jenkins *Jenkins) parseJobPath(job string) string {
