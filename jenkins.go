@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -56,7 +58,18 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
 
-	return http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		// check for response error 401
+		if resp.StatusCode == 401 {
+			return resp, errors.New("HTTP 401 - invalid password/token for user")
+		}
+	}
+
+	return resp, err
 }
 
 func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (err error) {
@@ -69,10 +82,10 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
+	} else {
+		// for debug if you would like to show the raw json data
+		fmt.Printf("trace - parseResponse - raw data: %s \n", data)
 	}
-
-	// for debug if you would like to show the raw json data
-	fmt.Printf("trace - parseResponse - raw data: %s \n", data)
 
 	return json.Unmarshal(data, body)
 }
@@ -83,22 +96,27 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		fmt.Println("trace - loadXSRFtoken - error by create NewRequest:", err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println("trace - loadXSRFtoken - error by sendRequest:", err)
 		return
 	}
 
 	if resp.StatusCode == 404 {
-		fmt.Println("info - loadXSRFtoken - XSRF is not enabled in remote jenkins")
+		log.Print("info - loadXSRFtoken - XSRF is not enabled in remote jenkins")
 		return
 	}
 
-	return jenkins.parseResponse(resp, body)
+	jsonError := jenkins.parseResponse(resp, body)
+	if jsonError != nil {
+		log.Fatal(err)
+	} else {
+		log.Print("trace - loadXSRFtoken - convert into jenkinsCrumb: ", body)
+	}
+
+	return jsonError
 }
 
 func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface{}, jenkinsCrumb *Crumb, postData *strings.Reader) (err error) {
@@ -106,7 +124,6 @@ func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface
 
 	req, err := http.NewRequest("POST", requestURL, postData)
 	if err != nil {
-		fmt.Println("warn - post - error by create NewRequest:", err)
 		return
 	}
 
@@ -117,17 +134,19 @@ func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface
 	// if exists add the XSRF token as header to the POST request
 	if jenkinsCrumb != nil {
 		if len(jenkinsCrumb.Class) > 0 {
-			fmt.Printf("info - add an XSRF token header to a POST request\n")
+			log.Print("trace - add an XSRF-Token-Header to a POST request")
 			req.Header.Set(jenkinsCrumb.CrumbRequestField, jenkinsCrumb.Crumb)
 		}
 	}
 
-	fmt.Printf("info - send a POST request to %q\n", path)
+	fmt.Printf("trace - send a POST request to %q \n", path)
+
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println("warn - post - error by sendRequest:", err)
 		return
 	}
+
+	//TODO check response code if ok
 
 	// POST return the Location to the new Job
 	// https://github.com/jenkinsci/parameterized-remote-trigger-plugin
@@ -158,20 +177,31 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 
 func (jenkins *Jenkins) trigger(job string, queryParams url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
-	fmt.Printf("info - set api job path to %q\n", path)
+	fmt.Printf("info - trigger - set api job path to %q\n", path)
+
+	jenkinsCrumb := Crumb{}
 
 	// load XSRF token for the following POST request
-	jenkinsCrumb := Crumb{}
-	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
-	if err != nil {
-		fmt.Println("info - could not load an XSRF token:", err)
-	}
-	fmt.Printf("trace - load jenkinsCrumb: %+v \n", jenkinsCrumb)
+	jenkins.loadXSRFtoken(&jenkinsCrumb)
 
 	// im demo jenkins muss noch der job dazu ins git
 	// das muss noch schöner werden hier - aber der wert kam erstmal im jenkins an - das ist gut
+
+	var m map[string]string
+	m = make(map[string]string)
+
+	m["state"] = "du da"
+	m["state_value"] = "noch was"
+
+	// convert the map into the jenkins json DTO and make url encoding too
+	var json string
+	for name, value := range m {
+		json += fmt.Sprintf("{\"name\":\"%s\",\"value\":\"%s\"}", name, value) + ","
+	}
+	json = strings.TrimRight(json, ",")
+
 	data := url.Values{}
-	data.Set("json", "{\"parameter\": [{\"name\":\"state_value\", \"value\":\"leck mich doch\"}]}")
+	data.Set("json", fmt.Sprintf("{\"parameter\": [%s]}", json))
 	postData := strings.NewReader(data.Encode())
 
 	return jenkins.post(path, queryParams, nil, &jenkinsCrumb, postData)
