@@ -47,7 +47,7 @@ func (p Plugin) Exec() error {
 		Token:    p.Token,
 	}
 
-	jenkins := NewJenkins(auth, p.BaseURL)
+	jenkins := NewJenkins(auth, p.BaseURL, nil)
 
 	for _, value := range jobs {
 		if err := jenkins.trigger(value, nil); err != nil {

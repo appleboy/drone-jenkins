@@ -22,6 +22,7 @@ type (
 	Jenkins struct {
 		Auth    *Auth
 		BaseURL string
+		Data    map[string]string
 	}
 
 	// Crumb contain the jenkins XSRF token header-name and header-value
@@ -33,11 +34,12 @@ type (
 )
 
 // NewJenkins is initial Jenkins object
-func NewJenkins(auth *Auth, url string) *Jenkins {
+func NewJenkins(auth *Auth, url string, data map[string]string) *Jenkins {
 	url = strings.TrimRight(url, "/")
 	return &Jenkins{
 		Auth:    auth,
 		BaseURL: url,
+		Data:    data,
 	}
 }
 
@@ -184,25 +186,19 @@ func (jenkins *Jenkins) trigger(job string, queryParams url.Values) error {
 	// load XSRF token for the following POST request
 	jenkins.loadXSRFtoken(&jenkinsCrumb)
 
-	// im demo jenkins muss noch der job dazu ins git
-	// das muss noch schöner werden hier - aber der wert kam erstmal im jenkins an - das ist gut
+	var postData *strings.Reader
+	if jenkins.Data != nil {
+		// convert the map into the jenkins json DTO and make url encoding too
+		var json string
+		for name, value := range jenkins.Data {
+			json += fmt.Sprintf("{\"name\":\"%s\",\"value\":\"%s\"}", name, value) + ","
+		}
+		json = strings.TrimRight(json, ",")
 
-	var m map[string]string
-	m = make(map[string]string)
-
-	m["state"] = "du da"
-	m["state_value"] = "noch was"
-
-	// convert the map into the jenkins json DTO and make url encoding too
-	var json string
-	for name, value := range m {
-		json += fmt.Sprintf("{\"name\":\"%s\",\"value\":\"%s\"}", name, value) + ","
+		data := url.Values{}
+		data.Set("json", fmt.Sprintf("{\"parameter\": [%s]}", json))
+		postData = strings.NewReader(data.Encode())
 	}
-	json = strings.TrimRight(json, ",")
-
-	data := url.Values{}
-	data.Set("json", fmt.Sprintf("{\"parameter\": [%s]}", json))
-	postData := strings.NewReader(data.Encode())
 
 	return jenkins.post(path, queryParams, nil, &jenkinsCrumb, postData)
 }
