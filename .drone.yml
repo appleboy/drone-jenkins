@@ -9,45 +9,38 @@ platform:
 steps:
 - name: vet
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - make vet
-  environment:
-    GO111MODULE: on
   volumes:
   - name: gopath
     path: /go
 
 - name: lint
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - make lint
-  environment:
-    GO111MODULE: on
   volumes:
   - name: gopath
     path: /go
 
 - name: misspell
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - make misspell-check
-  environment:
-    GO111MODULE: on
   volumes:
   - name: gopath
     path: /go
 
 - name: test
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - make test
   - make coverage
   environment:
-    GO111MODULE: on
     WEBHOOK_ID:
       from_secret: webhook_id
     WEBHOOK_TOKEN:
@@ -78,12 +71,11 @@ platform:
 steps:
 - name: build-push
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
-  - "go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/amd64/drone-jenkins"
+  - go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/amd64/drone-jenkins
   environment:
     CGO_ENABLED: 0
-    GO111MODULE: on
   when:
     event:
       exclude:
@@ -91,19 +83,18 @@ steps:
 
 - name: build-tag
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
-  - "go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/amd64/drone-jenkins"
+  - go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/amd64/drone-jenkins
   environment:
     CGO_ENABLED: 0
-    GO111MODULE: on
   when:
     event:
     - tag
 
 - name: executable
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - ./release/linux/amd64/drone-jenkins --help
 
@@ -142,8 +133,8 @@ steps:
 trigger:
   ref:
   - refs/heads/master
-  - "refs/pull/**"
-  - "refs/tags/**"
+  - refs/pull/**
+  - refs/tags/**
 
 depends_on:
 - testing
@@ -159,12 +150,11 @@ platform:
 steps:
 - name: build-push
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
-  - "go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm64/drone-jenkins"
+  - go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm64/drone-jenkins
   environment:
     CGO_ENABLED: 0
-    GO111MODULE: on
   when:
     event:
       exclude:
@@ -172,19 +162,18 @@ steps:
 
 - name: build-tag
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
-  - "go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm64/drone-jenkins"
+  - go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm64/drone-jenkins
   environment:
     CGO_ENABLED: 0
-    GO111MODULE: on
   when:
     event:
     - tag
 
 - name: executable
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - ./release/linux/arm64/drone-jenkins --help
 
@@ -223,8 +212,8 @@ steps:
 trigger:
   ref:
   - refs/heads/master
-  - "refs/pull/**"
-  - "refs/tags/**"
+  - refs/pull/**
+  - refs/tags/**
 
 depends_on:
 - testing
@@ -240,12 +229,11 @@ platform:
 steps:
 - name: build-push
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
-  - "go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm/drone-jenkins"
+  - go build -v -ldflags '-X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm/drone-jenkins
   environment:
     CGO_ENABLED: 0
-    GO111MODULE: on
   when:
     event:
       exclude:
@@ -253,19 +241,18 @@ steps:
 
 - name: build-tag
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
-  - "go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm/drone-jenkins"
+  - go build -v -ldflags '-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}' -a -o release/linux/arm/drone-jenkins
   environment:
     CGO_ENABLED: 0
-    GO111MODULE: on
   when:
     event:
     - tag
 
 - name: executable
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - ./release/linux/arm/drone-jenkins --help
 
@@ -304,8 +291,8 @@ steps:
 trigger:
   ref:
   - refs/heads/master
-  - "refs/pull/**"
-  - "refs/tags/**"
+  - refs/pull/**
+  - refs/tags/**
 
 depends_on:
 - testing
@@ -321,11 +308,9 @@ platform:
 steps:
 - name: build-all-binary
   pull: always
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - make release
-  environment:
-    GO111MODULE: on
   when:
     event:
     - tag
@@ -337,14 +322,14 @@ steps:
     api_key:
       from_secret: github_release_api_key
     files:
-    - "dist/release/*"
+    - dist/release/*
   when:
     event:
     - tag
 
 trigger:
   ref:
-  - "refs/tags/**"
+  - refs/tags/**
 
 depends_on:
 - testing
@@ -369,17 +354,10 @@ steps:
     username:
       from_secret: docker_username
 
-- name: microbadger
-  pull: always
-  image: plugins/webhook:1
-  settings:
-    url:
-      from_secret: microbadger_url
-
 trigger:
   ref:
   - refs/heads/master
-  - "refs/tags/**"
+  - refs/tags/**
 
 depends_on:
 - linux-amd64

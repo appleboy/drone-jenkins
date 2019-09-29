@@ -9,11 +9,8 @@
     steps: [
       {
         name: 'vet',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
-        environment: {
-          GO111MODULE: 'on',
-        },
         commands: [
           'make vet',
         ],
@@ -26,11 +23,8 @@
       },
       {
         name: 'lint',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
-        environment: {
-          GO111MODULE: 'on',
-        },
         commands: [
           'make lint',
         ],
@@ -43,11 +37,8 @@
       },
       {
         name: 'misspell',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
-        environment: {
-          GO111MODULE: 'on',
-        },
         commands: [
           'make misspell-check',
         ],
@@ -60,10 +51,9 @@
       },
       {
         name: 'test',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
         environment: {
-          GO111MODULE: 'on',
           WEBHOOK_ID: { 'from_secret': 'webhook_id' },
           WEBHOOK_TOKEN: { 'from_secret': 'webhook_token' },
         },
@@ -105,11 +95,10 @@
     steps: [
       {
         name: 'build-push',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
         environment: {
           CGO_ENABLED: '0',
-          GO111MODULE: 'on',
         },
         commands: [
           'go build -v -ldflags \'-X main.build=${DRONE_BUILD_NUMBER}\' -a -o release/' + os + '/' + arch + '/' + name,
@@ -122,11 +111,10 @@
       },
       {
         name: 'build-tag',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
         environment: {
           CGO_ENABLED: '0',
-          GO111MODULE: 'on',
         },
         commands: [
           'go build -v -ldflags \'-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}\' -a -o release/' + os + '/' + arch + '/' + name,
@@ -137,7 +125,7 @@
       },
       {
         name: 'executable',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
         commands: [
           './release/' + os + '/' + arch + '/' + name + ' --help',
@@ -202,11 +190,8 @@
     steps: [
       {
         name: 'build-all-binary',
-        image: 'golang:1.12',
+        image: 'golang:1.13',
         pull: 'always',
-        environment: {
-          GO111MODULE: 'on',
-        },
         commands: [
           'make release'
         ],
@@ -254,14 +239,6 @@
           password: { from_secret: 'docker_password' },
           spec: 'docker/manifest.tmpl',
           ignore_missing: true,
-        },
-      },
-      {
-        name: 'microbadger',
-        image: 'plugins/webhook:1',
-        pull: 'always',
-        settings: {
-          url: { 'from_secret': 'microbadger_url' },
         },
       },
     ],
