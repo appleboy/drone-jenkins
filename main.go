@@ -29,22 +29,22 @@ func main() {
 		cli.StringFlag{
 			Name:   "host",
 			Usage:  "jenkins base url",
-			EnvVar: "PLUGIN_URL,JENKINS_URL",
+			EnvVar: "PLUGIN_URL,JENKINS_URL,INPUT_URL",
 		},
 		cli.StringFlag{
 			Name:   "user,u",
 			Usage:  "jenkins username",
-			EnvVar: "PLUGIN_USER,JENKINS_USER",
+			EnvVar: "PLUGIN_USER,JENKINS_USER,INPUT_USER",
 		},
 		cli.StringFlag{
 			Name:   "token,t",
 			Usage:  "jenkins token",
-			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN",
+			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN,INPUT_TOKEN",
 		},
 		cli.StringSliceFlag{
 			Name:   "job,j",
 			Usage:  "jenkins job",
-			EnvVar: "PLUGIN_JOB,JENKINS_JOB",
+			EnvVar: "PLUGIN_JOB,JENKINS_JOB,INPUT_JOB",
 		},
 		cli.StringFlag{
 			Name:   "env-file",
