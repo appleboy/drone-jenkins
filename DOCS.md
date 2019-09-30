@@ -20,20 +20,6 @@ pipeline:
     job: drone-jenkins-plugin-job
 ```
 
-Example configuration for success builds:
-
-```diff
-pipeline:
-  jenkins:
-    image: appleboy/drone-jenkins
-    url: http://example.com
-    user: appleboy
-    token: xxxxxxxxxx
-    job: drone-jenkins-plugin-job
-+   when:
-+     status: [ success ]
-```
-
 Example configuration with multiple jobs:
 
 ```yaml
@@ -62,7 +48,7 @@ pipeline:
 
 It will trigger the URL of Jenkins job like as `http://example.com/job/folder_name/job/job_name/`
 
-# Parameter Reference
+## Parameter Reference
 
 url
 : jenkins server base url.
