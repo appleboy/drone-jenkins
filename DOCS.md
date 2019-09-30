@@ -11,9 +11,9 @@ image: appleboy/drone-jenkins
 The Jenkins plugin allows you to trigger Jenkins job automatically. The below pipeline configuration demonstrates simple usage:
 
 ```yaml
-pipeline:
-  jenkins:
-    image: appleboy/drone-jenkins
+- name: trigger job
+  image: appleboy/drone-jenkins
+  settings:
     url: http://example.com
     user: appleboy
     token: xxxxxxxxxx
@@ -23,9 +23,9 @@ pipeline:
 Example configuration with multiple jobs:
 
 ```yaml
-pipeline:
-  jenkins:
-    image: appleboy/drone-jenkins
+- name: trigger job
+  image: appleboy/drone-jenkins
+  settings:
     url: http://example.com
     user: appleboy
     token: xxxxxxxxxx
@@ -37,9 +37,9 @@ pipeline:
 Example configuration with jobs in the folder:
 
 ```yaml
-pipeline:
-  jenkins:
-    image: appleboy/drone-jenkins
+- name: trigger job
+  image: appleboy/drone-jenkins
+  settings:
     url: http://example.com
     user: appleboy
     token: xxxxxxxxxx
