@@ -6,7 +6,7 @@ GO ?= go
 # for dockerhub
 DEPLOY_ACCOUNT := appleboy
 DEPLOY_IMAGE := $(EXECUTABLE)
-ARCHS ?= amd64 386 arm
+ARCHS ?= amd64 386
 TARGETS ?= linux darwin windows
 PACKAGES ?= $(shell $(GO) list ./...)
 SOURCES ?= $(shell find . -name "*.go" -type f)
