@@ -22,8 +22,7 @@ The Jenkins plugin allows you to trigger Jenkins job automatically. The below pi
 
 Example configuration with multiple jobs:
 
-```yaml
-- name: trigger job
+```diff
   image: appleboy/drone-jenkins
   settings:
     url: http://example.com
@@ -36,8 +35,7 @@ Example configuration with multiple jobs:
 
 Example configuration with jobs in the folder:
 
-```yaml
-- name: trigger job
+```diff
   image: appleboy/drone-jenkins
   settings:
     url: http://example.com
