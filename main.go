@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli"
 )
 
@@ -13,6 +12,15 @@ import (
 var Version string
 
 func main() {
+	// Load env-file if it exists first
+	if filename, found := os.LookupEnv("PLUGIN_ENV_FILE"); found {
+		godotenv.Load(filename)
+	}
+
+	if _, err := os.Stat("/run/drone/env"); err == nil {
+		godotenv.Overload("/run/drone/env")
+	}
+
 	app := cli.NewApp()
 	app.Name = "jenkins plugin"
 	app.Usage = "trigger jenkins jobs"
@@ -45,12 +53,6 @@ func main() {
 			Name:   "job,j",
 			Usage:  "jenkins job",
 			EnvVar: "PLUGIN_JOB,JENKINS_JOB,INPUT_JOB",
-		},
-		cli.StringFlag{
-			Name:   "env-file",
-			Usage:  "source env file",
-			EnvVar: "ENV_FILE",
-			Value:  ".env",
 		},
 	}
 
@@ -93,10 +95,6 @@ REPOSITORY:
 }
 
 func run(c *cli.Context) error {
-	if c.String("env-file") != "" {
-		_ = godotenv.Load(c.String("env-file"))
-	}
-
 	plugin := Plugin{
 		BaseURL:  c.String("host"),
 		Username: c.String("user"),
