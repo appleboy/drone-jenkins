@@ -1,0 +1,16 @@
+version: '3.2'
+services:
+  #https://github.com/jenkinsci/docker/blob/master/README.md
+  test_jenkins_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # mount the jenkins_home data into a volume
+      - jenkins_home:/var/jenkins_home
+    ports:
+      - 8080:8080   # Jenkins HTTP-Endpoint
+      - 50000:50000 # Jenkins SSH-Endpoint
+
+volumes:
+  jenkins_home:
