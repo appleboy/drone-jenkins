@@ -1,4 +1,5 @@
 #https://verifa.io/insights/getting-started-with-jenkins-config-as-code/
+
 # Dockerfile
 FROM jenkins/jenkins:lts-jdk11
 
@@ -10,6 +11,8 @@ RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/plugins.txt
 # disable the setup wizard as we will set up jenkins as code :)
 ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
 
+# copy the seedjob file into the image
+COPY seedjob.groovy /usr/local/seedjob.groovy
 # copy the config-as-code yaml file into the image
 COPY jenkins-casc.yaml /usr/local/jenkins-casc.yaml
 # tell the jenkins config-as-code plugin where to find the yaml file
