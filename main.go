@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli"
 )
 
@@ -13,10 +12,19 @@ import (
 var Version string
 
 func main() {
+	// Load env-file if it exists first
+	if filename, found := os.LookupEnv("PLUGIN_ENV_FILE"); found {
+		godotenv.Load(filename)
+	}
+
+	if _, err := os.Stat("/run/drone/env"); err == nil {
+		godotenv.Overload("/run/drone/env")
+	}
+
 	app := cli.NewApp()
 	app.Name = "jenkins plugin"
 	app.Usage = "trigger jenkins jobs"
-	app.Copyright = "Copyright (c) 2017 Bo-Yi Wu"
+	app.Copyright = "Copyright (c) 2019 Bo-Yi Wu"
 	app.Authors = []cli.Author{
 		{
 			Name:  "Bo-Yi Wu",
@@ -29,28 +37,22 @@ func main() {
 		cli.StringFlag{
 			Name:   "host",
 			Usage:  "jenkins base url",
-			EnvVar: "PLUGIN_URL,JENKINS_URL",
+			EnvVar: "PLUGIN_URL,JENKINS_URL,INPUT_URL",
 		},
 		cli.StringFlag{
 			Name:   "user,u",
 			Usage:  "jenkins username",
-			EnvVar: "PLUGIN_USER,JENKINS_USER",
+			EnvVar: "PLUGIN_USER,JENKINS_USER,INPUT_USER",
 		},
 		cli.StringFlag{
 			Name:   "token,t",
 			Usage:  "jenkins token",
-			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN",
+			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN,INPUT_TOKEN",
 		},
 		cli.StringSliceFlag{
 			Name:   "job,j",
 			Usage:  "jenkins job",
-			EnvVar: "PLUGIN_JOB,JENKINS_JOB",
-		},
-		cli.StringFlag{
-			Name:   "env-file",
-			Usage:  "source env file",
-			EnvVar: "ENV_FILE",
-			Value:  ".env",
+			EnvVar: "PLUGIN_JOB,JENKINS_JOB,INPUT_JOB",
 		},
 	}
 
@@ -93,10 +95,6 @@ REPOSITORY:
 }
 
 func run(c *cli.Context) error {
-	if c.String("env-file") != "" {
-		_ = godotenv.Load(c.String("env-file"))
-	}
-
 	plugin := Plugin{
 		BaseURL:  c.String("host"),
 		Username: c.String("user"),
