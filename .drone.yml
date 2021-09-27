@@ -10,17 +10,13 @@ clone:
 
 pipeline:
 
-  change_file_ower_for_jenkins:
-    image: ubuntu:18.04
-    commands:
-      # on my ci server the user jenkins inside the jenkins image has the UID 1000 and GID 1000 (id -u / id -g)
-      - chown -R 1000:1000 /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
-
   jenkins:
-    image: jenkins/jenkins:lts
+    image: docker
     detach: true
-    environment:
-      JENKINS_HOME: /go/src/github.com/appleboy/drone-jenkins/jenkins_service/jenkins_data/
+    commands:
+      - cd jenkins_test_setup
+      - docker-compose build
+      - docker-compose up
       
   lint:
     image: golang:1.11

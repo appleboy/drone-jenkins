@@ -6,7 +6,7 @@ jenkins:
       allowsSignup: false
       users:
         - id: "admin"
-          password: "admin"
+          password: "adminadmin"
         - id: "dev"
           password: "dev"
   authorizationStrategy:
