@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 )
@@ -23,6 +25,7 @@ type (
 		Auth    *Auth
 		BaseURL string
 		Data    map[string]string
+		client  http.Client
 	}
 
 	// Crumb contain the jenkins XSRF token header-name and header-value
@@ -36,11 +39,13 @@ type (
 // NewJenkins is initial Jenkins object
 func NewJenkins(auth *Auth, url string, data map[string]string) *Jenkins {
 	url = strings.TrimRight(url, "/")
-	return &Jenkins{
+	var j = Jenkins{
 		Auth:    auth,
 		BaseURL: url,
 		Data:    data,
 	}
+	j.initClient()
+	return &j
 }
 
 func (jenkins *Jenkins) buildURL(path string, queryParams url.Values) (requestURL string) {
@@ -55,12 +60,22 @@ func (jenkins *Jenkins) buildURL(path string, queryParams url.Values) (requestUR
 	return
 }
 
+func (jenkins *Jenkins) initClient() {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		log.Fatalf("Got error while creating cookie jar %s", err.Error())
+	}
+	jenkins.client = http.Client{
+		Jar: jar,
+	}
+}
+
 func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	if jenkins.Auth != nil {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := jenkins.client.Do(req)
 
 	if err != nil {
 		log.Fatal(err)
@@ -69,6 +84,11 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 		if resp.StatusCode == 401 {
 			return resp, errors.New("HTTP 401 - invalid password/token for user")
 		}
+
+		for _, cookie := range resp.Cookies() {
+			fmt.Printf("trace - parseResponse - SET COOKIE: %s \n", cookie.Name)
+		}
+
 	}
 
 	return resp, err
@@ -77,16 +97,16 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (err error) {
 	defer resp.Body.Close()
 
-	if body == nil {
-		return
-	}
-
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	} else {
 		// for debug if you would like to show the raw json data
 		fmt.Printf("trace - parseResponse - raw data: %s \n", data)
+	}
+
+	if body == nil {
+		return
 	}
 
 	return json.Unmarshal(data, body)
@@ -121,7 +141,7 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 	return jsonError
 }
 
-func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface{}, jenkinsCrumb *Crumb, postData *strings.Reader) (err error) {
+func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface{}, jenkinsCrumb *Crumb, postData io.Reader) (err error) {
 	requestURL := jenkins.buildURL(path, queryParams)
 
 	req, err := http.NewRequest("POST", requestURL, postData)
@@ -186,7 +206,7 @@ func (jenkins *Jenkins) trigger(job string, queryParams url.Values) error {
 	// load XSRF token for the following POST request
 	jenkins.loadXSRFtoken(&jenkinsCrumb)
 
-	var postData *strings.Reader
+	var postData io.Reader
 	if jenkins.Data != nil {
 		// convert the map into the jenkins json DTO and make url encoding too
 		var json string
@@ -198,6 +218,8 @@ func (jenkins *Jenkins) trigger(job string, queryParams url.Values) error {
 		data := url.Values{}
 		data.Set("json", fmt.Sprintf("{\"parameter\": [%s]}", json))
 		postData = strings.NewReader(data.Encode())
+	} else {
+		postData = nil
 	}
 
 	return jenkins.post(path, queryParams, nil, &jenkinsCrumb, postData)

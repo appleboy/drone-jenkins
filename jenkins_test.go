@@ -32,7 +32,7 @@ func TestBuildURL(t *testing.T) {
 	assert.Equal(t, "http://example.com/foo/", jenkins.buildURL("/foo/", nil))
 
 	query := url.Values{"ba": []string{"ta"}}
-	assert.Equal(t, "http://example.com/foo/?ba=ta", jenkins.buildURL("foo/", query))
+	assert.Equal(t, "http://example.com/foo/?ba=ta", jenkins.buildURL("/foo/", query))
 }
 
 func TestUnSupportProtocol(t *testing.T) {
