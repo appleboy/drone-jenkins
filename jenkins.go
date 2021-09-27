@@ -100,10 +100,10 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
-	} else {
-		// for debug if you would like to show the raw json data
-		fmt.Printf("trace - parseResponse - raw data: %s \n", data)
 	}
+
+	// for debug if you would like to show the raw json data
+	fmt.Printf("trace - parseResponse - raw data: %s \n", data)
 
 	if body == nil {
 		return
