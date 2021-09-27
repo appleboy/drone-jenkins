@@ -173,7 +173,7 @@ func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface
 	// POST return the Location to the new Job
 	// https://github.com/jenkinsci/parameterized-remote-trigger-plugin
 	// https://wiki.jenkins.io/display/JENKINS/Parameterized+Remote+Trigger+Plugin
-	var locationHeader string = resp.Header.Get("Location")
+	locationHeader := resp.Header.Get("Location")
 	fmt.Println("HEADER Location:", locationHeader)
 	// it is a link to the queue, executable.url link to the job build
 
