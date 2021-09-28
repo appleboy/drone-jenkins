@@ -33,7 +33,7 @@ steps:
   pull: always
   image: buildpack-deps:stretch-curl
   commands:
-  - sleep 15
+  - sleep 60
   - curl http://jenkins:8080
 
 
