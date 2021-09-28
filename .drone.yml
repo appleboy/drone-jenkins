@@ -19,7 +19,7 @@ steps:
 
 - name: jenkins
   pull: always
-  image: docker
+  image: docker/compose
   detach: true
   commands:
   - cd jenkins_test_setup
