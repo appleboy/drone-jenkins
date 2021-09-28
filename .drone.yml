@@ -7,16 +7,6 @@ platform:
   arch: amd64
 
 steps:
-- name: vet
-  pull: always
-  image: golang:1.15
-  commands:
-  - make vet
-  volumes:
-  - name: gopath
-    path: /go
-
-
 - name: jenkins
   pull: always
   image: docker/compose
@@ -29,13 +19,14 @@ steps:
   - name: docker_socket
     path: /var/run/docker.sock
 
-- name: jenkins_ping
+- name: vet
   pull: always
-  image: buildpack-deps:stretch-curl
+  image: golang:1.15
   commands:
-  - sleep 60
-  - curl http://jenkins:8080
-
+  - make vet
+  volumes:
+  - name: gopath
+    path: /go
 
 - name: lint
   pull: always
@@ -54,6 +45,15 @@ steps:
   volumes:
   - name: gopath
     path: /go
+
+
+- name: jenkins_ping
+  pull: always
+  image: buildpack-deps:stretch-curl
+  commands:
+  - sleep 45
+  - curl http://jenkins:8080
+
 
 - name: test
   pull: always
