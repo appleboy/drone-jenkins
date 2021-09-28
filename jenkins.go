@@ -63,7 +63,7 @@ func (jenkins *Jenkins) buildURL(path string, queryParams url.Values) (requestUR
 func (jenkins *Jenkins) initClient() {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		log.Fatalf("Got error while creating cookie jar %s", err.Error())
+		log.Printf("Got error while creating cookie jar %s", err.Error())
 	}
 	jenkins.client = http.Client{
 		Jar: jar,
@@ -78,7 +78,7 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	resp, err := jenkins.client.Do(req)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	} else {
 		// check for response error 401
 		if resp.StatusCode == 401 {
@@ -133,7 +133,7 @@ func (jenkins *Jenkins) loadXSRFtoken(body interface{}) (err error) {
 
 	jsonError := jenkins.parseResponse(resp, body)
 	if jsonError != nil {
-		log.Fatal(err)
+		log.Println(err)
 	} else {
 		log.Print("trace - loadXSRFtoken - convert into jenkinsCrumb: ", body)
 	}
