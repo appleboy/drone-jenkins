@@ -3,10 +3,11 @@ services:
   # https://github.com/jenkinsci/docker/blob/master/README.md
   # https://jenkinsci.github.io/job-dsl-plugin/#path/pipelineJob
 
-  test_jenkins_server:
+  test_jenkins:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: jenkins
     #volumes:
       # mount the jenkins_home data into a volume
       #- jenkins_home:/var/jenkins_home
