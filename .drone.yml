@@ -16,11 +16,23 @@ steps:
   - name: gopath
     path: /go
 
-  jenkins_ping:
-    image: buildpack-deps:stretch-curl
-    commands:
-      - sleep 15
-      - curl http://jenkins:8080
+
+- name: jenkins
+  pull: always
+  image: docker
+  detach: true
+  commands:
+  - cd jenkins_test_setup
+  - docker-compose build
+  - docker-compose up
+
+- name: jenkins_ping
+  pull: always
+  image: buildpack-deps:stretch-curl
+  commands:
+  - sleep 15
+  - curl http://jenkins:8080
+
 
 - name: lint
   pull: always
@@ -371,4 +383,4 @@ depends_on:
 - linux-arm
 - release-binary
 
-...
+
