@@ -25,6 +25,9 @@ steps:
   - cd jenkins_test_setup
   - docker-compose build
   - docker-compose up
+  volumes:
+  - name: docker_socket
+    path: /var/run/docker.sock
 
 - name: jenkins_ping
   pull: always
@@ -77,6 +80,9 @@ steps:
 volumes:
 - name: gopath
   temp: {}
+- name: docker_socket
+  host:
+    path: /var/run/docker.sock
 
 ---
 kind: pipeline
