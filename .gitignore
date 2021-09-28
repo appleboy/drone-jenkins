@@ -26,5 +26,4 @@ drone-jenkins
 coverage.txt
 .env
 dist
-jenkins_service/jenkins_data/war/
-jenkins_service/jenkins_data/
+

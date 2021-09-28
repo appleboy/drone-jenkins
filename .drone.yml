@@ -15,7 +15,7 @@ steps:
   volumes:
   - name: gopath
     path: /go
-      
+
   jenkins_ping:
     image: buildpack-deps:stretch-curl
     commands:
