@@ -7,17 +7,22 @@ platform:
   arch: amd64
 
 steps:
-- name: jenkins
-  pull: always
-  image: docker/compose
-  detach: true
+- name: jenkins_test_image_build
+  image: docker
   commands:
   - cd jenkins_test_setup
-  - docker-compose build
-  - docker-compose up
+  - docker build -t jenkins_test_setup:latest
   volumes:
   - name: docker_socket
     path: /var/run/docker.sock
+
+- name: jenkins
+  image: jenkins_test_setup:latest
+  pull: if-not-exists
+  detach: true
+  commands:
+  - echo bar
+
 
 - name: vet
   pull: always
