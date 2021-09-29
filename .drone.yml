@@ -11,7 +11,7 @@ steps:
   image: docker
   commands:
   - cd jenkins_test_setup
-  - docker build -t jenkins_test_setup:latest
+  - docker build -t jenkins_test_setup:latest .
   volumes:
   - name: docker_socket
     path: /var/run/docker.sock
