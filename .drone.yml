@@ -20,8 +20,6 @@ steps:
   image: jenkins_test_setup:latest
   pull: if-not-exists
   detach: true
-  commands:
-  - echo bar
 
 
 - name: vet
