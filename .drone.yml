@@ -54,9 +54,6 @@ steps:
   pull: always
   image: buildpack-deps:stretch-curl
   commands:
-  - echo $DRONE_SYSTEM_HOSTNAME
-  - echo $DRONE_SYSTEM_HOST
-  - echo $DRONE_STAGE_MACHINE
   - sleep 60
   - curl http://jenkins:8080
 
@@ -255,6 +252,7 @@ trigger:
   instance:
     exclude:
     - drone.speedy-likeness.de
+    - netcup-runner
 
 depends_on:
 - testing
@@ -341,6 +339,7 @@ trigger:
   instance:
     exclude:
     - drone.speedy-likeness.de
+    - netcup-runner
 
 depends_on:
 - testing
