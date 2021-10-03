@@ -52,7 +52,7 @@ func (p Plugin) Exec() error {
 		for _, v := range parameters {
 			keyAndValue := strings.SplitN(v, "=", 2)
 			if len(keyAndValue) < 2 {
-				return errors.New("please each jenkins-paramter as 'key'='value' string")
+				return errors.New("please each jenkins-parameter as 'key'='value' string")
 			}
 			parameter[keyAndValue[0]] = keyAndValue[1]
 		}
