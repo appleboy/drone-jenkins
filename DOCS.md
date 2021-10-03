@@ -48,6 +48,34 @@ Example configuration with jobs in the folder:
 
 It will trigger the URL of Jenkins job like as `http://example.com/job/folder_name/job/job_name/`
 
+Example configuration for a job with a paramter:
+
+```yaml
+- name: trigger jenkins job
+  image: appleboy/drone-jenkins
+  settings:
+    url: http://example.com
+    user: appleboy
+    token: xxxxxxxxxx
+    job: drone-jenkins-plugin-job
+    parameter: name=value
+```
+
+Example configuration for a job with multiple paramters:
+
+```diff
+  - name: trigger jenkins job
+    image: appleboy/drone-jenkins
+    settings:
+      url: http://example.com
+      user: appleboy
+      token: xxxxxxxxxx
+      job: drone-jenkins-plugin-job
+      parameter:
++       - name1=value
++       - name2=value
+```
+
 ## Parameter Reference
 
 url
@@ -61,3 +89,6 @@ token
 
 job
 : jenkins job name
+
+parameter
+: jenkins job parameter

@@ -53,6 +53,34 @@ func TestPluginTriggerBuild(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestPluginTriggerBuild2(t *testing.T) {
+	plugin := Plugin{
+		BaseURL:   "http://jenkins:8080",
+		Username:  "dev",
+		Token:     "devdev",
+		Job:       []string{"another-pipeline"},
+		Parameter: []string{"sValue=abc", "sValue2:xyz"},
+	}
+
+	err := plugin.Exec()
+
+	assert.NotNil(t, err)
+}
+
+func TestPluginTriggerBuild3(t *testing.T) {
+	plugin := Plugin{
+		BaseURL:   "http://jenkins:8080",
+		Username:  "dev",
+		Token:     "devdev",
+		Job:       []string{"another-pipeline"},
+		Parameter: []string{"sValue=abc", "sValue2=xyz"},
+	}
+
+	err := plugin.Exec()
+
+	assert.Nil(t, err)
+}
+
 func TestTrimElement(t *testing.T) {
 	var input, result []string
 
