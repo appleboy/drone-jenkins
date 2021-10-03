@@ -403,6 +403,9 @@ trigger:
   ref:
   - refs/heads/master
   - "refs/tags/**"
+  repo:
+    exclude:
+    - geopossachs/drone-jenkins
 
 depends_on:
 - linux-amd64
