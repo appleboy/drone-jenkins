@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
-
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMissingConfig(t *testing.T) {
@@ -16,7 +16,7 @@ func TestMissingConfig(t *testing.T) {
 
 func TestMissingJenkinsConfig(t *testing.T) {
 	plugin := Plugin{
-		BaseURL: "http://example.com",
+		BaseURL: "http://jenkins:8080",
 	}
 
 	err := plugin.Exec()
@@ -26,9 +26,9 @@ func TestMissingJenkinsConfig(t *testing.T) {
 
 func TestMissingJenkinsJob(t *testing.T) {
 	plugin := Plugin{
-		BaseURL:  "http://example.com",
-		Username: "foo",
-		Token:    "bar",
+		BaseURL:  "http://jenkins:8080",
+		Username: "dev",
+		Token:    "devdev",
 	}
 
 	err := plugin.Exec()
@@ -42,10 +42,10 @@ func TestMissingJenkinsJob(t *testing.T) {
 
 func TestPluginTriggerBuild(t *testing.T) {
 	plugin := Plugin{
-		BaseURL:  "http://example.com",
-		Username: "foo",
-		Token:    "bar",
-		Job:      []string{"drone-jenkins"},
+		BaseURL:  "http://jenkins:8080",
+		Username: "dev",
+		Token:    "devdev",
+		Job:      []string{"first-pipeline"},
 	}
 
 	err := plugin.Exec()

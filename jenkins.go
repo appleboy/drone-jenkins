@@ -86,7 +86,7 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 		}
 
 		for _, cookie := range resp.Cookies() {
-			fmt.Printf("trace - parseResponse - SET COOKIE: %s \n", cookie.Name)
+			log.Printf("trace - parseResponse - SET COOKIE: %s \n", cookie.Name)
 		}
 
 	}
@@ -103,7 +103,7 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 	}
 
 	// for debug if you would like to show the raw json data
-	fmt.Printf("trace - parseResponse - raw data: %s \n", data)
+	log.Printf("trace - parseResponse - raw data: %s \n", data)
 
 	if body == nil {
 		return
@@ -161,7 +161,7 @@ func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface
 		}
 	}
 
-	fmt.Printf("trace - send a POST request to %q \n", path)
+	log.Printf("trace - send a POST request to %q \n", path)
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
@@ -174,7 +174,7 @@ func (jenkins *Jenkins) post(path string, queryParams url.Values, body interface
 	// https://github.com/jenkinsci/parameterized-remote-trigger-plugin
 	// https://wiki.jenkins.io/display/JENKINS/Parameterized+Remote+Trigger+Plugin
 	locationHeader := resp.Header.Get("Location")
-	fmt.Println("HEADER Location:", locationHeader)
+	log.Println("HEADER Location:", locationHeader)
 	// it is a link to the queue, executable.url link to the job build
 
 	return jenkins.parseResponse(resp, body)
@@ -199,7 +199,7 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 
 func (jenkins *Jenkins) trigger(job string, queryParams url.Values) error {
 	path := jenkins.parseJobPath(job) + "/build"
-	fmt.Printf("info - trigger - set api job path to %q\n", path)
+	log.Printf("info - trigger - set api job path to %q\n", path)
 
 	jenkinsCrumb := Crumb{}
 

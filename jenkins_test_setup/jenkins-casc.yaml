@@ -8,7 +8,7 @@ jenkins:
         - id: "admin"
           password: "adminadmin"
         - id: "dev"
-          password: "dev"
+          password: "devdev"
   authorizationStrategy:
     globalMatrix:
       permissions:

@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/stretchr/testify/assert"
-
+	"log"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseJobPath(t *testing.T) {
@@ -38,11 +37,11 @@ func TestBuildURL(t *testing.T) {
 func TestUnSupportProtocol(t *testing.T) {
 	auth := &Auth{
 		Username: "admin",
-		Token:    "116ba1f8950c5ddff3ab26d6f5acbc3e41",
+		Token:    "adminadmin",
 	}
-	jenkins := NewJenkins(auth, "example.com", nil)
+	jenkins := NewJenkins(auth, "jenkins:8080", nil)
 
-	err := jenkins.trigger("drone-jenkins", nil)
+	err := jenkins.trigger("first-pipeline", nil)
 	assert.NotNil(t, err)
 }
 
@@ -57,9 +56,9 @@ func TestLoadXSRFToken(t *testing.T) {
 	jenkinsCrumb := Crumb{}
 	err := jenkins.loadXSRFtoken(&jenkinsCrumb)
 	if err != nil {
-		fmt.Println("warn - error by load XSRF token:", err)
+		log.Println("warn - error by load XSRF token:", err)
 	}
-	fmt.Printf("info - load jenkinsCrumb: %+v \n", jenkinsCrumb)
+	log.Printf("info - load jenkinsCrumb: %+v \n", jenkinsCrumb)
 
 	assert.Nil(t, err)
 }
