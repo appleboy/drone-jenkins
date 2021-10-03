@@ -249,6 +249,9 @@ trigger:
   - refs/heads/master
   - "refs/pull/**"
   - "refs/tags/**"
+  instance:
+    exclude:
+    - drone.speedy-likeness.de
 
 depends_on:
 - testing
@@ -332,6 +335,9 @@ trigger:
   - refs/heads/master
   - "refs/pull/**"
   - "refs/tags/**"
+  instance:
+    exclude:
+    - drone.speedy-likeness.de
 
 depends_on:
 - testing
