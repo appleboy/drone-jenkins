@@ -249,10 +249,9 @@ trigger:
   - refs/heads/master
   - "refs/pull/**"
   - "refs/tags/**"
-  instance:
+  repo:
     exclude:
-    - drone.speedy-likeness.de
-    - netcup-runner
+    - geopossachs/drone-jenkins
 
 depends_on:
 - testing
@@ -336,10 +335,9 @@ trigger:
   - refs/heads/master
   - "refs/pull/**"
   - "refs/tags/**"
-  instance:
+  repo:
     exclude:
-    - drone.speedy-likeness.de
-    - netcup-runner
+    - geopossachs/drone-jenkins
 
 depends_on:
 - testing
