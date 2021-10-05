@@ -54,6 +54,11 @@ func main() {
 			Usage:  "jenkins job",
 			EnvVar: "PLUGIN_JOB,JENKINS_JOB,INPUT_JOB",
 		},
+		cli.StringSliceFlag{
+			Name:   "parameter,p",
+			Usage:  "jenkins parameter",
+			EnvVar: "PLUGIN_PARAMETER,JENKINS_PARAMETER,INPUT_PARAMETER",
+		},
 	}
 
 	// Override a template
@@ -96,10 +101,11 @@ REPOSITORY:
 
 func run(c *cli.Context) error {
 	plugin := Plugin{
-		BaseURL:  c.String("host"),
-		Username: c.String("user"),
-		Token:    c.String("token"),
-		Job:      c.StringSlice("job"),
+		BaseURL:   c.String("host"),
+		Username:  c.String("user"),
+		Token:     c.String("token"),
+		Job:       c.StringSlice("job"),
+		Parameter: c.StringSlice("parameter"),
 	}
 
 	return plugin.Exec()

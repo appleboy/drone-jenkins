@@ -1,0 +1,29 @@
+# jenkins-casc.yaml
+
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "adminadmin"
+        - id: "dev"
+          password: "devdev"
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Job/Build:dev"
+        - "Job/Cancel:dev"
+        - "Job/Read:dev"
+        - "Job/Workspace:dev"
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+        - "Run/Replay:dev"
+        - "Run/Update:dev"
+
+  # make sure our jenkins master has 1 executor so that we can run our pipelines
+  numExecutors: 1
+
+# specify the seedjob groovy script that will create the  pipelines for us
+jobs:
+  - file: /usr/local/seedjob.groovy
