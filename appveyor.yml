@@ -8,7 +8,7 @@ environment:
 
 stack: go 1.15
 
-app_compile:
+before_test:
   - make vet
   - make lint
   - make misspell-check
