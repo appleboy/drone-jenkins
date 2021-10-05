@@ -3,7 +3,7 @@ version: 1.0.0.{build}
 
 platform: x64
 
-clone_folder: c:\gopath\src\github.com\$username\$project
+clone_folder: c:\gopath\src\github.com\account\myproject
 
 environment:
   GOPATH: c:\gopath
