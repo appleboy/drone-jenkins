@@ -1,14 +1,21 @@
 # appveyor.yml
-build: off
+version: 1.0.0.{build}
 
-clone_folder: /usr/go/src/github.com/$username/$project
+platform: x64
+
+clone_folder: c:\gopath\src\github.com\$username\$project
 
 environment:
-  GOPATH: /usr/go/
+  GOPATH: c:\gopath
 
-stack: go 1.15
+install:
+  - echo %PATH%
+  - echo %GOPATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - go version
+  - go env
 
-before_test:
+build_script:
   - make vet
   - make lint
   - make misspell-check
