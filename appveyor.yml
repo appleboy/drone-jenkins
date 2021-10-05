@@ -1,0 +1,14 @@
+# appveyor.yml
+build: off
+
+clone_folder: /usr/go/src/github.com/$username/$project
+
+environment:
+  GOPATH: /usr/go/
+
+stack: go 1.15
+
+app_compile:
+  - make vet
+  - make lint
+  - make misspell-check
