@@ -6,5 +6,6 @@ LABEL maintainer="Bo-Yi Wu <appleboy.tw@gmail.com>" \
   org.label-schema.schema-version="1.0"
 
 COPY release/linux/arm/drone-jenkins /bin/
+COPY resolv.conf /etc/resolv.conf
 
 ENTRYPOINT ["/bin/drone-jenkins"]
