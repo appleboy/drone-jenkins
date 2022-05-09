@@ -8,13 +8,12 @@ platform:
 
 steps:
 - name: jenkins_test_image_build
-  image: docker
+  image: docker:dind
+  environment:
+      - DOCKER_HOST=tcp://docker:2375
   commands:
   - cd jenkins_test_setup
   - docker build -t jenkins_test_setup:latest .
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
 
 - name: jenkins
   image: jenkins_test_setup:latest
@@ -83,9 +82,11 @@ steps:
 volumes:
 - name: gopath
   temp: {}
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
+
+services:
+  docker:
+    image: docker:dind
+    privileged: true
 
 ---
 kind: pipeline
