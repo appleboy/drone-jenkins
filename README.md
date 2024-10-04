@@ -2,12 +2,10 @@
 
 ![logo](./images/logo.png)
 
+[![Lint and Testing](https://github.com/appleboy/drone-jenkins/actions/workflows/lint.yml/badge.svg)](https://github.com/appleboy/drone-jenkins/actions/workflows/lint.yml)
 [![GoDoc](https://godoc.org/github.com/appleboy/drone-jenkins?status.svg)](https://godoc.org/github.com/appleboy/drone-jenkins)
-[![Build Status](https://cloud.drone.io/api/badges/appleboy/drone-jenkins/status.svg)](https://cloud.drone.io/appleboy/drone-jenkins)
 [![codecov](https://codecov.io/gh/appleboy/drone-jenkins/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-jenkins)
 [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/drone-jenkins)](https://goreportcard.com/report/github.com/appleboy/drone-jenkins)
-[![Docker Pulls](https://img.shields.io/docker/pulls/appleboy/drone-jenkins.svg)](https://hub.docker.com/r/appleboy/drone-jenkins/)
-[![microbadger](https://images.microbadger.com/badges/image/appleboy/drone-jenkins.svg)](https://microbadger.com/images/appleboy/drone-jenkins "Get your own image badge on microbadger.com")
 
 [Drone](https://github.com/drone/drone) plugin for trigger [Jenkins](https://jenkins.io/) jobs.
 
