@@ -31,7 +31,6 @@ func trimElement(keys []string) []string {
 
 // Exec executes the plugin.
 func (p Plugin) Exec() error {
-
 	if len(p.BaseURL) == 0 || len(p.Username) == 0 || len(p.Token) == 0 {
 		return errors.New("missing jenkins config")
 	}
