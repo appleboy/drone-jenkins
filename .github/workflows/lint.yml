@@ -1,0 +1,44 @@
+name: Lint and Testing
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "^1"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --verbose
+
+      - uses: hadolint/hadolint-action@v3.1.0
+        name: hadolint for Dockerfile
+        with:
+          dockerfile: docker/Dockerfile
+
+  testing:
+    runs-on: ubuntu-latest
+    container: golang:1.22-alpine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup sshd server
+        run: |
+          apk add git make curl perl bash build-base zlib-dev ucl-dev
+
+      - name: testing
+        run: |
+          make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
