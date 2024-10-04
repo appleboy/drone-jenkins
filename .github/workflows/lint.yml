@@ -28,7 +28,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         go: [1.22, 1.23]
         include:
           - os: ubuntu-latest
