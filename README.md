@@ -91,7 +91,7 @@ docker run --rm \
   -e JENKINS_USER=appleboy
   -e JENKINS_TOKEN=xxxxxxx
   -e JENKINS_JOB=drone-jenkins-plugin
-  appleboy/drone-jenkins
+  ghcr.io/appleboy/drone-jenkins
 ```
 
 trigger multiple jobs.
@@ -102,7 +102,7 @@ docker run --rm \
   -e JENKINS_USER=appleboy
   -e JENKINS_TOKEN=xxxxxxx
   -e JENKINS_JOB=drone-jenkins-plugin-1,drone-jenkins-plugin-2
-  appleboy/drone-jenkins
+  ghcr.io/appleboy/drone-jenkins
 ```
 
 ### Usage from drone ci
@@ -117,7 +117,7 @@ docker run --rm \
   -e PLUGIN_JOB=xxxxxxx \
   -v $(pwd):$(pwd) \
   -w $(pwd) \
-  appleboy/drone-jenkins
+  ghcr.io/appleboy/drone-jenkins
 ```
 
 You can get more [information](DOCS.md) about how to use scp plugin in drone.
