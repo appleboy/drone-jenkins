@@ -93,6 +93,10 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (
 		return
 	}
 
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("unexpected response code: %d", resp.StatusCode)
+	}
+
 	return jenkins.parseResponse(resp, body)
 }
 

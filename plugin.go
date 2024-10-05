@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"strings"
 )
 
@@ -53,6 +54,7 @@ func (p Plugin) Exec() error {
 		if err := jenkins.trigger(v, nil); err != nil {
 			return err
 		}
+		log.Printf("trigger job %s success", v)
 	}
 
 	return nil
