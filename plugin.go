@@ -12,6 +12,7 @@ type (
 		Username string
 		Token    string
 		Job      []string
+		Insecure bool
 	}
 )
 
@@ -46,7 +47,7 @@ func (p Plugin) Exec() error {
 		Token:    p.Token,
 	}
 
-	jenkins := NewJenkins(auth, p.BaseURL)
+	jenkins := NewJenkins(auth, p.BaseURL, p.Insecure)
 
 	for _, v := range jobs {
 		if err := jenkins.trigger(v, nil); err != nil {

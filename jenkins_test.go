@@ -12,7 +12,7 @@ func TestParseJobPath(t *testing.T) {
 		Username: "appleboy",
 		Token:    "1234",
 	}
-	jenkins := NewJenkins(auth, "http://example.com")
+	jenkins := NewJenkins(auth, "http://example.com", false)
 
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("/foo/"))
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("foo/"))
@@ -25,7 +25,7 @@ func TestUnSupportProtocol(t *testing.T) {
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, "example.com")
+	jenkins := NewJenkins(auth, "example.com", false)
 
 	err := jenkins.trigger("drone-jenkins", nil)
 	assert.NotNil(t, err)
@@ -36,7 +36,7 @@ func TestTriggerBuild(t *testing.T) {
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, "http://example.com")
+	jenkins := NewJenkins(auth, "http://example.com", false)
 
 	err := jenkins.trigger("drone-jenkins", url.Values{"token": []string{"bar"}})
 	assert.Nil(t, err)

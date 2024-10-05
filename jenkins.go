@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,15 +21,27 @@ type (
 	Jenkins struct {
 		Auth    *Auth
 		BaseURL string
+		Client  *http.Client
 	}
 )
 
 // NewJenkins is initial Jenkins object
-func NewJenkins(auth *Auth, url string) *Jenkins {
+func NewJenkins(auth *Auth, url string, insecure bool) *Jenkins {
 	url = strings.TrimRight(url, "/")
+
+	client := http.DefaultClient
+	if insecure {
+		client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		}
+	}
+
 	return &Jenkins{
 		Auth:    auth,
 		BaseURL: url,
+		Client:  client,
 	}
 }
 
@@ -48,7 +61,7 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	if jenkins.Auth != nil {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
-	return http.DefaultClient.Do(req)
+	return jenkins.Client.Do(req)
 }
 
 func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (err error) {

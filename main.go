@@ -54,6 +54,11 @@ func main() {
 			Usage:  "jenkins job",
 			EnvVar: "PLUGIN_JOB,JENKINS_JOB,INPUT_JOB",
 		},
+		cli.BoolFlag{
+			Name:   "insecure",
+			Usage:  "allow insecure server connections when using SSL",
+			EnvVar: "PLUGIN_INSECURE,JENKINS_INSECURE,INPUT_INSECURE",
+		},
 	}
 
 	// Override a template
@@ -100,6 +105,7 @@ func run(c *cli.Context) error {
 		Username: c.String("user"),
 		Token:    c.String("token"),
 		Job:      c.StringSlice("job"),
+		Insecure: c.Bool("insecure"),
 	}
 
 	return plugin.Exec()
