@@ -59,6 +59,11 @@ func main() {
 			Usage:  "allow insecure server connections when using SSL",
 			EnvVar: "PLUGIN_INSECURE,JENKINS_INSECURE,INPUT_INSECURE",
 		},
+		cli.StringSliceFlag{
+			Name:   "parameter,p",
+			Usage:  "jenkins build parameter",
+			EnvVar: "PLUGIN_PARAMETER,JENKINS_PARAMETER,INPUT_PARAMETER",
+		},
 	}
 
 	// Override a template
@@ -101,11 +106,12 @@ REPOSITORY:
 
 func run(c *cli.Context) error {
 	plugin := Plugin{
-		BaseURL:  c.String("host"),
-		Username: c.String("user"),
-		Token:    c.String("token"),
-		Job:      c.StringSlice("job"),
-		Insecure: c.Bool("insecure"),
+		BaseURL:   c.String("host"),
+		Username:  c.String("user"),
+		Token:     c.String("token"),
+		Job:       c.StringSlice("job"),
+		Insecure:  c.Bool("insecure"),
+		Parameter: c.StringSlice("parameter"),
 	}
 
 	return plugin.Exec()
