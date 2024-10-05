@@ -118,7 +118,7 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	var urlPath string
-	if params == nil || len(params) == 0 {
+	if len(params) == 0 {
 		urlPath = jenkins.parseJobPath(job) + "/build"
 	} else {
 		urlPath = jenkins.parseJobPath(job) + "/buildWithParameters"
