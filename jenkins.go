@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -81,7 +82,6 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 
 func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (err error) {
 	requestURL := jenkins.buildURL(path, params)
-	// formData := params.Encode()
 	req, err := http.NewRequest("POST", requestURL, nil)
 	if err != nil {
 		return
@@ -123,6 +123,8 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) error {
 	} else {
 		urlPath = jenkins.parseJobPath(job) + "/buildWithParameters"
 	}
+
+	log.Println(urlPath)
 
 	return jenkins.post(urlPath, params, nil)
 }
