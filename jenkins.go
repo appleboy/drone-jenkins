@@ -81,15 +81,14 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 
 func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (err error) {
 	requestURL := jenkins.buildURL(path, params)
+	// formData := params.Encode()
 	req, err := http.NewRequest("POST", requestURL, nil)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 
@@ -118,7 +117,12 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 }
 
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
-	path := jenkins.parseJobPath(job) + "/build"
+	var urlPath string
+	if params == nil || len(params) == 0 {
+		urlPath = jenkins.parseJobPath(job) + "/build"
+	} else {
+		urlPath = jenkins.parseJobPath(job) + "/buildWithParameters"
+	}
 
-	return jenkins.post(path, params, nil)
+	return jenkins.post(urlPath, params, nil)
 }

@@ -3,17 +3,19 @@ package main
 import (
 	"errors"
 	"log"
+	"net/url"
 	"strings"
 )
 
 type (
 	// Plugin values.
 	Plugin struct {
-		BaseURL  string
-		Username string
-		Token    string
-		Job      []string
-		Insecure bool
+		BaseURL   string
+		Username  string
+		Token     string
+		Job       []string
+		Insecure  bool
+		Parameter []string
 	}
 )
 
@@ -50,8 +52,16 @@ func (p Plugin) Exec() error {
 
 	jenkins := NewJenkins(auth, p.BaseURL, p.Insecure)
 
+	params := url.Values{}
+	for _, v := range p.Parameter {
+		kv := strings.Split(v, "=")
+		if len(kv) == 2 {
+			params.Add(kv[0], kv[1])
+		}
+	}
+
 	for _, v := range jobs {
-		if err := jenkins.trigger(v, nil); err != nil {
+		if err := jenkins.trigger(v, params); err != nil {
 			return err
 		}
 		log.Printf("trigger job %s success", v)
