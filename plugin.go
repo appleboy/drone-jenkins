@@ -10,12 +10,12 @@ import (
 type (
 	// Plugin values.
 	Plugin struct {
-		BaseURL   string
-		Username  string
-		Token     string
-		Job       []string
-		Insecure  bool
-		Parameter []string
+		BaseURL    string
+		Username   string
+		Token      string
+		Job        []string
+		Insecure   bool
+		Parameters []string
 	}
 )
 
@@ -53,7 +53,7 @@ func (p Plugin) Exec() error {
 	jenkins := NewJenkins(auth, p.BaseURL, p.Insecure)
 
 	params := url.Values{}
-	for _, v := range p.Parameter {
+	for _, v := range p.Parameters {
 		kv := strings.Split(v, "=")
 		if len(kv) == 2 {
 			params.Add(kv[0], kv[1])
