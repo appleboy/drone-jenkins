@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.9.0
-	github.com/urfave/cli v1.22.15
+	github.com/urfave/cli v1.22.16
 )
 
 require (
