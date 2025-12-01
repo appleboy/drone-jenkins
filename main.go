@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -88,6 +89,27 @@ func main() {
 			Usage:   "jenkins build parameters",
 			EnvVars: []string{"PLUGIN_PARAMETERS", "JENKINS_PARAMETERS", "INPUT_PARAMETERS"},
 		},
+		&cli.BoolFlag{
+			Name:    "wait",
+			Usage:   "wait for job completion",
+			EnvVars: []string{"PLUGIN_WAIT", "JENKINS_WAIT", "INPUT_WAIT"},
+		},
+		&cli.DurationFlag{
+			Name:  "poll-interval",
+			Usage: "interval between status checks (e.g., 10s, 1m)",
+			Value: 10 * time.Second,
+			EnvVars: []string{
+				"PLUGIN_POLL_INTERVAL",
+				"JENKINS_POLL_INTERVAL",
+				"INPUT_POLL_INTERVAL",
+			},
+		},
+		&cli.DurationFlag{
+			Name:    "timeout",
+			Usage:   "maximum time to wait for job completion (e.g., 30m, 1h)",
+			Value:   30 * time.Minute,
+			EnvVars: []string{"PLUGIN_TIMEOUT", "JENKINS_TIMEOUT", "INPUT_TIMEOUT"},
+		},
 	}
 
 	// Override a template
@@ -142,13 +164,16 @@ func run(c *cli.Context) error {
 	}
 
 	plugin := Plugin{
-		BaseURL:     c.String("host"),
-		Username:    c.String("user"),
-		Token:       c.String("token"),
-		RemoteToken: c.String("remote-token"),
-		Job:         c.StringSlice("job"),
-		Insecure:    c.Bool("insecure"),
-		Parameters:  c.StringSlice("parameters"),
+		BaseURL:      c.String("host"),
+		Username:     c.String("user"),
+		Token:        c.String("token"),
+		RemoteToken:  c.String("remote-token"),
+		Job:          c.StringSlice("job"),
+		Insecure:     c.Bool("insecure"),
+		Parameters:   c.StringSlice("parameters"),
+		Wait:         c.Bool("wait"),
+		PollInterval: c.Duration("poll-interval"),
+		Timeout:      c.Duration("timeout"),
 	}
 
 	return plugin.Exec()

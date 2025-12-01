@@ -6,19 +6,23 @@ import (
 	"log"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type (
 	// Plugin represents the configuration for the Jenkins plugin.
 	// It contains all necessary credentials and settings to trigger Jenkins jobs.
 	Plugin struct {
-		BaseURL     string   // Jenkins server base URL
-		Username    string   // Jenkins username for authentication
-		Token       string   // Jenkins API token for authentication
-		RemoteToken string   // Optional remote trigger token for additional security
-		Job         []string // List of Jenkins job names to trigger
-		Insecure    bool     // Whether to skip TLS certificate verification
-		Parameters  []string // Job parameters in key=value format
+		BaseURL      string        // Jenkins server base URL
+		Username     string        // Jenkins username for authentication
+		Token        string        // Jenkins API token for authentication
+		RemoteToken  string        // Optional remote trigger token for additional security
+		Job          []string      // List of Jenkins job names to trigger
+		Insecure     bool          // Whether to skip TLS certificate verification
+		Parameters   []string      // Job parameters in key=value format
+		Wait         bool          // Whether to wait for job completion
+		PollInterval time.Duration // Interval between status checks (default: 10s)
+		Timeout      time.Duration // Maximum time to wait for job completion (default: 30m)
 	}
 )
 
@@ -105,12 +109,44 @@ func (p Plugin) Exec() error {
 	// Parse job parameters
 	params := parseParameters(p.Parameters)
 
+	// Set default values for wait configuration
+	pollInterval := p.PollInterval
+	if pollInterval == 0 {
+		pollInterval = 10 * time.Second
+	}
+
+	timeout := p.Timeout
+	if timeout == 0 {
+		timeout = 30 * time.Minute
+	}
+
 	// Trigger each job
 	for _, jobName := range jobs {
-		if err := jenkins.trigger(jobName, params); err != nil {
+		queueID, err := jenkins.trigger(jobName, params)
+		if err != nil {
 			return fmt.Errorf("failed to trigger job %q: %w", jobName, err)
 		}
-		log.Printf("successfully triggered job: %s", jobName)
+		log.Printf("successfully triggered job: %s (queue #%d)", jobName, queueID)
+
+		// Wait for job completion if requested
+		if p.Wait {
+			buildInfo, err := jenkins.waitForCompletion(jobName, queueID, pollInterval, timeout)
+			if err != nil {
+				return fmt.Errorf("error waiting for job %q: %w", jobName, err)
+			}
+
+			// Check if build was successful
+			if buildInfo.Result != "SUCCESS" {
+				return fmt.Errorf(
+					"job %q (build #%d) failed with status: %s",
+					jobName,
+					buildInfo.Number,
+					buildInfo.Result,
+				)
+			}
+
+			log.Printf("job %s (build #%d) completed successfully", jobName, buildInfo.Number)
+		}
 	}
 
 	return nil
