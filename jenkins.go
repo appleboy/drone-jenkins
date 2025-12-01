@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -34,6 +35,7 @@ func NewJenkins(auth *Auth, url string, insecure bool) *Jenkins {
 	if insecure {
 		client = &http.Client{
 			Transport: &http.Transport{
+				// #nosec G402 -- InsecureSkipVerify is intentionally configurable by user
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
 		}
@@ -82,7 +84,7 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 
 func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (err error) {
 	requestURL := jenkins.buildURL(path, params)
-	req, err := http.NewRequest("POST", requestURL, nil)
+	req, err := http.NewRequestWithContext(context.Background(), "POST", requestURL, nil)
 	if err != nil {
 		return
 	}
