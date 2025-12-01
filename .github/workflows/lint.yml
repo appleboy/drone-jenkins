@@ -9,27 +9,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: "^1"
+          go-version: "stable"
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
       - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.6
           args: --verbose
 
-      - uses: hadolint/hadolint-action@v3.1.0
+      - uses: hadolint/hadolint-action@v3.3.0
         name: hadolint for Dockerfile
         with:
-          dockerfile: docker/Dockerfile
+          dockerfile: Dockerfile
 
-  test:
+  testing:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        go: [1.22, 1.23]
+        go: ["1.25"]
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
@@ -40,12 +41,12 @@ jobs:
       GOPROXY: https://proxy.golang.org
     steps:
       - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
 
@@ -59,9 +60,9 @@ jobs:
             ${{ runner.os }}-go-
       - name: Run Tests
         run: |
-          go test -v -covermode=atomic -coverprofile=coverage.out
+          go test -race -cover -coverprofile=coverage.out ./...
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           flags: ${{ matrix.os }},go-${{ matrix.go }}
