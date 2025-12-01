@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -32,12 +34,24 @@ func TestUnSupportProtocol(t *testing.T) {
 }
 
 func TestTriggerBuild(t *testing.T) {
+	// Create a mock Jenkins server
+	var receivedParams url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedParams = r.URL.Query()
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
 	auth := &Auth{
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, "http://example.com", "remote-token", false)
+	jenkins := NewJenkins(auth, server.URL, "remote-token", false)
 
-	err := jenkins.trigger("drone-jenkins", url.Values{"param": []string{"value"}})
-	assert.Nil(t, err)
+	params := url.Values{"param": []string{"value"}}
+	err := jenkins.trigger("drone-jenkins", params)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "value", receivedParams.Get("param"))
+	assert.Equal(t, "remote-token", receivedParams.Get("token"))
 }

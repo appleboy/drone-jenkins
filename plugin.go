@@ -2,70 +2,115 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
 )
 
 type (
-	// Plugin values.
+	// Plugin represents the configuration for the Jenkins plugin.
+	// It contains all necessary credentials and settings to trigger Jenkins jobs.
 	Plugin struct {
-		BaseURL     string
-		Username    string
-		Token       string
-		RemoteToken string
-		Job         []string
-		Insecure    bool
-		Parameters  []string
+		BaseURL     string   // Jenkins server base URL
+		Username    string   // Jenkins username for authentication
+		Token       string   // Jenkins API token for authentication
+		RemoteToken string   // Optional remote trigger token for additional security
+		Job         []string // List of Jenkins job names to trigger
+		Insecure    bool     // Whether to skip TLS certificate verification
+		Parameters  []string // Job parameters in key=value format
 	}
 )
 
-func trimElement(keys []string) []string {
-	newKeys := []string{}
+// trimWhitespaceFromSlice removes empty and whitespace-only strings from a slice.
+// It returns a new slice containing only non-empty trimmed strings.
+func trimWhitespaceFromSlice(items []string) []string {
+	result := make([]string, 0, len(items))
 
-	for _, value := range keys {
-		value = strings.Trim(value, " ")
-		if len(value) == 0 {
-			continue
+	for _, item := range items {
+		trimmed := strings.TrimSpace(item)
+		if trimmed != "" {
+			result = append(result, trimmed)
 		}
-		newKeys = append(newKeys, value)
 	}
 
-	return newKeys
+	return result
 }
 
-// Exec executes the plugin.
+// parseParameters converts a slice of key=value strings into url.Values.
+// It logs a warning for any parameters that don't match the expected format.
+func parseParameters(params []string) url.Values {
+	values := url.Values{}
+
+	for _, param := range params {
+		parts := strings.SplitN(param, "=", 2)
+		if len(parts) != 2 {
+			log.Printf("warning: skipping invalid parameter format (expected key=value): %q", param)
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := parts[1] // Keep value as-is to preserve intentional spaces
+
+		if key == "" {
+			log.Printf("warning: skipping parameter with empty key: %q", param)
+			continue
+		}
+
+		values.Add(key, value)
+	}
+
+	return values
+}
+
+// validateConfig checks that all required plugin configuration is present.
+// It returns a descriptive error if any required field is missing.
+func (p Plugin) validateConfig() error {
+	if p.BaseURL == "" {
+		return errors.New("jenkins base URL is required")
+	}
+	if p.Username == "" {
+		return errors.New("jenkins username is required")
+	}
+	if p.Token == "" {
+		return errors.New("jenkins API token is required")
+	}
+	return nil
+}
+
+// Exec executes the plugin by triggering the configured Jenkins jobs.
+// It validates the configuration, parses parameters, and triggers each job sequentially.
+// Returns an error if validation fails or any job trigger fails.
 func (p Plugin) Exec() error {
-	if len(p.BaseURL) == 0 || len(p.Username) == 0 || len(p.Token) == 0 {
-		return errors.New("missing jenkins config")
+	// Validate required configuration
+	if err := p.validateConfig(); err != nil {
+		return fmt.Errorf("configuration error: %w", err)
 	}
 
-	jobs := trimElement(p.Job)
-
+	// Clean and validate job list
+	jobs := trimWhitespaceFromSlice(p.Job)
 	if len(jobs) == 0 {
-		return errors.New("missing jenkins job")
+		return errors.New("at least one Jenkins job name is required")
 	}
 
+	// Set up authentication
 	auth := &Auth{
 		Username: p.Username,
 		Token:    p.Token,
 	}
 
+	// Initialize Jenkins client
 	jenkins := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure)
 
-	params := url.Values{}
-	for _, v := range p.Parameters {
-		kv := strings.Split(v, "=")
-		if len(kv) == 2 {
-			params.Add(kv[0], kv[1])
-		}
-	}
+	// Parse job parameters
+	params := parseParameters(p.Parameters)
 
-	for _, v := range jobs {
-		if err := jenkins.trigger(v, params); err != nil {
-			return err
+	// Trigger each job
+	for _, jobName := range jobs {
+		if err := jenkins.trigger(jobName, params); err != nil {
+			return fmt.Errorf("failed to trigger job %q: %w", jobName, err)
 		}
-		log.Printf("trigger job %s success", v)
+		log.Printf("successfully triggered job: %s", jobName)
 	}
 
 	return nil
