@@ -68,21 +68,6 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	return jenkins.Client.Do(req)
 }
 
-func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (err error) {
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	if body == nil {
-		return
-	}
-
-	return json.Unmarshal(data, body)
-}
-
 func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (err error) {
 	requestURL := jenkins.buildURL(path, params)
 
