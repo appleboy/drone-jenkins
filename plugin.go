@@ -10,12 +10,13 @@ import (
 type (
 	// Plugin values.
 	Plugin struct {
-		BaseURL    string
-		Username   string
-		Token      string
-		Job        []string
-		Insecure   bool
-		Parameters []string
+		BaseURL     string
+		Username    string
+		Token       string
+		RemoteToken string
+		Job         []string
+		Insecure    bool
+		Parameters  []string
 	}
 )
 
@@ -50,7 +51,7 @@ func (p Plugin) Exec() error {
 		Token:    p.Token,
 	}
 
-	jenkins := NewJenkins(auth, p.BaseURL, p.Insecure)
+	jenkins := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure)
 
 	params := url.Values{}
 	for _, v := range p.Parameters {

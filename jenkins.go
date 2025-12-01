@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,12 +22,13 @@ type (
 	Jenkins struct {
 		Auth    *Auth
 		BaseURL string
+		Token   string // Remote trigger token
 		Client  *http.Client
 	}
 )
 
 // NewJenkins is initial Jenkins object
-func NewJenkins(auth *Auth, url string, insecure bool) *Jenkins {
+func NewJenkins(auth *Auth, url string, token string, insecure bool) *Jenkins {
 	url = strings.TrimRight(url, "/")
 
 	client := http.DefaultClient
@@ -44,6 +44,7 @@ func NewJenkins(auth *Auth, url string, insecure bool) *Jenkins {
 	return &Jenkins{
 		Auth:    auth,
 		BaseURL: url,
+		Token:   token,
 		Client:  client,
 	}
 }
@@ -70,12 +71,12 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (err error) {
 	defer resp.Body.Close()
 
-	if body == nil {
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return
 	}
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
+	if body == nil {
 		return
 	}
 
@@ -84,6 +85,7 @@ func (jenkins *Jenkins) parseResponse(resp *http.Response, body interface{}) (er
 
 func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (err error) {
 	requestURL := jenkins.buildURL(path, params)
+
 	req, err := http.NewRequestWithContext(context.Background(), "POST", requestURL, nil)
 	if err != nil {
 		return
@@ -95,7 +97,7 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected response code: %d", resp.StatusCode)
+		return fmt.Errorf("unexpected response code: %d, body: %s", resp.StatusCode, string(data))
 	}
 
 	return jenkins.parseResponse(resp, body)
@@ -119,14 +121,30 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 }
 
 func (jenkins *Jenkins) trigger(job string, params url.Values) error {
-	var urlPath string
-	if len(params) == 0 {
-		urlPath = jenkins.parseJobPath(job) + "/build"
-	} else {
-		urlPath = jenkins.parseJobPath(job) + "/buildWithParameters"
+	// Add remote trigger token to params
+	if jenkins.Token != "" {
+		if params == nil {
+			params = url.Values{}
+		}
+		params.Set("token", jenkins.Token)
 	}
 
-	log.Println(urlPath)
+	var urlPath string
+	// Check if params contains build parameters (excluding 'token')
+	hasBuildParams := false
+	for key := range params {
+		if key != "token" {
+			hasBuildParams = true
+			break
+		}
+	}
 
+	if hasBuildParams {
+		urlPath = jenkins.parseJobPath(job) + "/buildWithParameters"
+	} else {
+		urlPath = jenkins.parseJobPath(job) + "/build"
+	}
+
+	// All params (including token) are passed as query parameters
 	return jenkins.post(urlPath, params, nil)
 }

@@ -48,8 +48,13 @@ func main() {
 		&cli.StringFlag{
 			Name:    "token",
 			Aliases: []string{"t"},
-			Usage:   "jenkins token",
+			Usage:   "jenkins API token for authentication",
 			EnvVars: []string{"PLUGIN_TOKEN", "JENKINS_TOKEN", "INPUT_TOKEN"},
+		},
+		&cli.StringFlag{
+			Name:    "remote-token",
+			Usage:   "jenkins remote trigger token",
+			EnvVars: []string{"PLUGIN_REMOTE_TOKEN", "JENKINS_REMOTE_TOKEN", "INPUT_REMOTE_TOKEN"},
 		},
 		&cli.StringSliceFlag{
 			Name:    "job",
@@ -112,12 +117,13 @@ REPOSITORY:
 
 func run(c *cli.Context) error {
 	plugin := Plugin{
-		BaseURL:    c.String("host"),
-		Username:   c.String("user"),
-		Token:      c.String("token"),
-		Job:        c.StringSlice("job"),
-		Insecure:   c.Bool("insecure"),
-		Parameters: c.StringSlice("parameters"),
+		BaseURL:     c.String("host"),
+		Username:    c.String("user"),
+		Token:       c.String("token"),
+		RemoteToken: c.String("remote-token"),
+		Job:         c.StringSlice("job"),
+		Insecure:    c.Bool("insecure"),
+		Parameters:  c.StringSlice("parameters"),
 	}
 
 	return plugin.Exec()
