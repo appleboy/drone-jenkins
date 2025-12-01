@@ -1,12 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	testJobBuildPath    = "/job/test-job/build"
+	testQueueItemPath   = "/queue/item/123/api/json"
+	testBuildStatusPath = "/job/test-job/456/api/json"
 )
 
 // TestValidateConfig tests the validateConfig method
@@ -264,8 +271,12 @@ func TestExecMissingJenkinsJob(t *testing.T) {
 // TestExecTriggerBuild tests successful job triggering
 func TestExecTriggerBuild(t *testing.T) {
 	// Create a mock Jenkins server
+	queueID := 1
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+		w.Header().
+			Set("Location", fmt.Sprintf("http://jenkins.example.com/queue/item/%d/", queueID))
+		w.WriteHeader(http.StatusCreated)
+		queueID++
 	}))
 	defer server.Close()
 
@@ -287,7 +298,9 @@ func TestExecTriggerMultipleJobs(t *testing.T) {
 	jobsTriggered := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jobsTriggered++
-		w.WriteHeader(http.StatusOK)
+		w.Header().
+			Set("Location", fmt.Sprintf("http://jenkins.example.com/queue/item/%d/", jobsTriggered))
+		w.WriteHeader(http.StatusCreated)
 	}))
 	defer server.Close()
 
@@ -310,7 +323,8 @@ func TestExecWithParameters(t *testing.T) {
 	var receivedQuery url.Values
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedQuery = r.URL.Query()
-		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Location", "http://jenkins.example.com/queue/item/1/")
+		w.WriteHeader(http.StatusCreated)
 	}))
 	defer server.Close()
 
@@ -335,7 +349,8 @@ func TestExecWithRemoteToken(t *testing.T) {
 	var receivedToken string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedToken = r.URL.Query().Get("token")
-		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Location", "http://jenkins.example.com/queue/item/1/")
+		w.WriteHeader(http.StatusCreated)
 	}))
 	defer server.Close()
 
@@ -359,7 +374,9 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 	jobsTriggered := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jobsTriggered++
-		w.WriteHeader(http.StatusOK)
+		w.Header().
+			Set("Location", fmt.Sprintf("http://jenkins.example.com/queue/item/%d/", jobsTriggered))
+		w.WriteHeader(http.StatusCreated)
 	}))
 	defer server.Close()
 
@@ -375,4 +392,73 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 	assert.NoError(t, err)
 	// Should trigger 3 jobs (whitespace-only entry should be filtered out)
 	assert.Equal(t, 3, jobsTriggered)
+}
+
+// TestExecWithWaitSuccess tests job execution with wait for successful completion
+func TestExecWithWaitSuccess(t *testing.T) {
+	// Create a mock Jenkins server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case testJobBuildPath:
+			// Trigger build
+			w.Header().Set("Location", "http://jenkins.example.com/queue/item/123/")
+			w.WriteHeader(http.StatusCreated)
+		case testQueueItemPath:
+			// Queue item with build number
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":123,"executable":{"number":456}}`))
+		case testBuildStatusPath:
+			// Build completed successfully
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"number":456,"building":false,"result":"SUCCESS"}`))
+		}
+	}))
+	defer server.Close()
+
+	plugin := Plugin{
+		BaseURL:  server.URL,
+		Username: "foo",
+		Token:    "bar",
+		Job:      []string{"test-job"},
+		Wait:     true,
+	}
+
+	err := plugin.Exec()
+
+	assert.NoError(t, err)
+}
+
+// TestExecWithWaitFailure tests job execution with wait for failed build
+func TestExecWithWaitFailure(t *testing.T) {
+	// Create a mock Jenkins server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case testJobBuildPath:
+			// Trigger build
+			w.Header().Set("Location", "http://jenkins.example.com/queue/item/123/")
+			w.WriteHeader(http.StatusCreated)
+		case testQueueItemPath:
+			// Queue item with build number
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":123,"executable":{"number":456}}`))
+		case testBuildStatusPath:
+			// Build completed with failure
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"number":456,"building":false,"result":"FAILURE"}`))
+		}
+	}))
+	defer server.Close()
+
+	plugin := Plugin{
+		BaseURL:  server.URL,
+		Username: "foo",
+		Token:    "bar",
+		Job:      []string{"test-job"},
+		Wait:     true,
+	}
+
+	err := plugin.Exec()
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed with status: FAILURE")
 }
