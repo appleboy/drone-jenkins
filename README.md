@@ -112,12 +112,12 @@ Jenkins API tokens are recommended for authentication. To create an API token:
 
 1. Log into Jenkins
 2. Click on your username (top right)
-3. Select "Configure"
+3. Select "Security"
 4. Under "API Token", click "Add new Token"
 5. Give it a name and click "Generate"
 6. Copy the generated token
 
-![jenkins token](./images/jenkins-token.png)
+![personal token](./images/personal-token.png)
 
 Alternatively, you can use a remote trigger token configured in your Jenkins job settings.
 
