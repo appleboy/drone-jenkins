@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Version set at compile-time
@@ -25,7 +25,7 @@ func main() {
 	app.Name = "jenkins plugin"
 	app.Usage = "trigger jenkins jobs"
 	app.Copyright = "Copyright (c) 2019 Bo-Yi Wu"
-	app.Authors = []cli.Author{
+	app.Authors = []*cli.Author{
 		{
 			Name:  "Bo-Yi Wu",
 			Email: "appleboy.tw@gmail.com",
@@ -34,35 +34,39 @@ func main() {
 	app.Action = run
 	app.Version = Version
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:   "host",
-			Usage:  "jenkins base url",
-			EnvVar: "PLUGIN_URL,JENKINS_URL,INPUT_URL",
+		&cli.StringFlag{
+			Name:    "host",
+			Usage:   "jenkins base url",
+			EnvVars: []string{"PLUGIN_URL", "JENKINS_URL", "INPUT_URL"},
 		},
-		cli.StringFlag{
-			Name:   "user,u",
-			Usage:  "jenkins username",
-			EnvVar: "PLUGIN_USER,JENKINS_USER,INPUT_USER",
+		&cli.StringFlag{
+			Name:    "user",
+			Aliases: []string{"u"},
+			Usage:   "jenkins username",
+			EnvVars: []string{"PLUGIN_USER", "JENKINS_USER", "INPUT_USER"},
 		},
-		cli.StringFlag{
-			Name:   "token,t",
-			Usage:  "jenkins token",
-			EnvVar: "PLUGIN_TOKEN,JENKINS_TOKEN,INPUT_TOKEN",
+		&cli.StringFlag{
+			Name:    "token",
+			Aliases: []string{"t"},
+			Usage:   "jenkins token",
+			EnvVars: []string{"PLUGIN_TOKEN", "JENKINS_TOKEN", "INPUT_TOKEN"},
 		},
-		cli.StringSliceFlag{
-			Name:   "job,j",
-			Usage:  "jenkins job",
-			EnvVar: "PLUGIN_JOB,JENKINS_JOB,INPUT_JOB",
+		&cli.StringSliceFlag{
+			Name:    "job",
+			Aliases: []string{"j"},
+			Usage:   "jenkins job",
+			EnvVars: []string{"PLUGIN_JOB", "JENKINS_JOB", "INPUT_JOB"},
 		},
-		cli.BoolFlag{
-			Name:   "insecure",
-			Usage:  "allow insecure server connections when using SSL",
-			EnvVar: "PLUGIN_INSECURE,JENKINS_INSECURE,INPUT_INSECURE",
+		&cli.BoolFlag{
+			Name:    "insecure",
+			Usage:   "allow insecure server connections when using SSL",
+			EnvVars: []string{"PLUGIN_INSECURE", "JENKINS_INSECURE", "INPUT_INSECURE"},
 		},
-		cli.StringSliceFlag{
-			Name:   "parameters,p",
-			Usage:  "jenkins build parameters",
-			EnvVar: "PLUGIN_PARAMETERS,JENKINS_PARAMETERS,INPUT_PARAMETERS",
+		&cli.StringSliceFlag{
+			Name:    "parameters",
+			Aliases: []string{"p"},
+			Usage:   "jenkins build parameters",
+			EnvVars: []string{"PLUGIN_PARAMETERS", "JENKINS_PARAMETERS", "INPUT_PARAMETERS"},
 		},
 	}
 
