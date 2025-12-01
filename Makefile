@@ -39,14 +39,18 @@ endif
 TAGS ?=
 LDFLAGS ?= -X 'main.Version=$(VERSION)'
 
+.PHONY: all
 all: build
 
+.PHONY: test
 test:
 	@$(GO) test -v -cover -coverprofile coverage.txt ./... && echo "\n==>\033[32m Ok\033[m\n" || exit 1
 
+.PHONY: install
 install: $(GOFILES)
 	$(GO) install -v -tags '$(TAGS)' -ldflags '$(EXTLDFLAGS)-s -w $(LDFLAGS)'
 
+.PHONY: build
 build: $(EXECUTABLE)
 
 $(EXECUTABLE): $(GOFILES)

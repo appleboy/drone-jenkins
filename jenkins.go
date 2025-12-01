@@ -96,11 +96,21 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (
 		return
 	}
 
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected response code: %d, body: %s", resp.StatusCode, string(data))
 	}
 
-	return jenkins.parseResponse(resp, body)
+	if body == nil {
+		return nil
+	}
+
+	return json.Unmarshal(data, body)
 }
 
 func (jenkins *Jenkins) parseJobPath(job string) string {

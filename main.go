@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -9,16 +10,30 @@ import (
 )
 
 // Version set at compile-time
-var Version string
+var Version = "dev"
+
+const asciiArt = `
+________                                            ____.              __   .__
+\______ \_______  ____   ____   ____               |    | ____   ____ |  | _|__| ____   ______
+ |    |  \_  __ \/  _ \ /    \_/ __ \   ______     |    |/ __ \ /    \|  |/ /  |/    \ /  ___/
+ |    |   \  | \(  <_> )   |  \  ___/  /_____/ /\__|    \  ___/|   |  \    <|  |   |  \\___ \
+/_______  /__|   \____/|___|  /\___  >         \________|___  >___|  /__|_ \__|___|  /____  >
+        \/                  \/     \/                        \/     \/     \/       \/     \/
+                                                                    version: {{.Version}}
+`
 
 func main() {
 	// Load env-file if it exists first
 	if filename, found := os.LookupEnv("PLUGIN_ENV_FILE"); found {
-		_ = godotenv.Load(filename)
+		if err := godotenv.Load(filename); err != nil && !os.IsNotExist(err) {
+			log.Printf("Warning: failed to load env file %s: %v", filename, err)
+		}
 	}
 
 	if _, err := os.Stat("/run/drone/env"); err == nil {
-		_ = godotenv.Overload("/run/drone/env")
+		if err := godotenv.Overload("/run/drone/env"); err != nil {
+			log.Printf("Warning: failed to load /run/drone/env: %v", err)
+		}
 	}
 
 	app := cli.NewApp()
@@ -76,14 +91,7 @@ func main() {
 	}
 
 	// Override a template
-	cli.AppHelpTemplate = `
-________                                            ____.              __   .__
-\______ \_______  ____   ____   ____               |    | ____   ____ |  | _|__| ____   ______
- |    |  \_  __ \/  _ \ /    \_/ __ \   ______     |    |/ __ \ /    \|  |/ /  |/    \ /  ___/
- |    |   \  | \(  <_> )   |  \  ___/  /_____/ /\__|    \  ___/|   |  \    <|  |   |  \\___ \
-/_______  /__|   \____/|___|  /\___  >         \________|\___  >___|  /__|_ \__|___|  /____  >
-        \/                  \/     \/                        \/     \/     \/       \/     \/
-                                                                    version: {{.Version}}
+	cli.AppHelpTemplate = asciiArt + `
 NAME:
    {{.Name}} - {{.Usage}}
 
@@ -107,7 +115,7 @@ VERSION:
    {{.Version}}
    {{end}}
 REPOSITORY:
-    Github: https://github.com/appleboy/drone-line
+    Github: https://github.com/appleboy/drone-jenkins
 `
 
 	if err := app.Run(os.Args); err != nil {
@@ -116,6 +124,23 @@ REPOSITORY:
 }
 
 func run(c *cli.Context) error {
+	// Validate required parameters
+	if c.String("host") == "" {
+		return fmt.Errorf("host is required")
+	}
+
+	if len(c.StringSlice("job")) == 0 {
+		return fmt.Errorf("at least one job is required")
+	}
+
+	// Validate authentication: either (user + token) or remote-token must be provided
+	hasUserAuth := c.String("user") != "" && c.String("token") != ""
+	hasRemoteToken := c.String("remote-token") != ""
+
+	if !hasUserAuth && !hasRemoteToken {
+		return fmt.Errorf("authentication required: provide either (user + token) or remote-token")
+	}
+
 	plugin := Plugin{
 		BaseURL:     c.String("host"),
 		Username:    c.String("user"),
