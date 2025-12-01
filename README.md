@@ -30,9 +30,9 @@ Please make sure that you create the `/data/jenkins` before starting the Jenkins
 
 The pre-compiled binaries can be downloaded from [release page](https://github.com/appleboy/drone-jenkins/releases). Support the following OS type.
 
-* Windows amd64/386
-* Linux amd64/386
-* Darwin amd64/386
+- Windows amd64/386
+- Linux amd64/386
+- Darwin amd64/386
 
 With `Go` installed
 
