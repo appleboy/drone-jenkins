@@ -94,7 +94,7 @@ func (jenkins *Jenkins) post(path string, params url.Values, body interface{}) (
 		return
 	}
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected response code: %d", resp.StatusCode)
 	}
 
