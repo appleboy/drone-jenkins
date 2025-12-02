@@ -97,15 +97,8 @@ docker pull ghcr.io/appleboy/drone-jenkins
 Set up a Jenkins server using Docker:
 
 ```sh
-docker run \
-  --name jenkins \
-  -d --restart always \
-  -p 8080:8080 -p 50000:50000 \
-  -v /data/jenkins:/var/jenkins_home \
-  jenkins/jenkins:lts
+docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:slim
 ```
-
-**Note**: Create the `/data/jenkins` directory before starting Jenkins.
 
 ### Authentication
 
