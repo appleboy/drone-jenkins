@@ -117,23 +117,33 @@ Alternatively, you can use a remote trigger token configured in your Jenkins job
 
 ### Parameters Reference
 
-| Parameter     | CLI Flag             | Environment Variable                            | Required      | Description                                            |
-| ------------- | -------------------- | ----------------------------------------------- | ------------- | ------------------------------------------------------ |
-| Host          | `--host`             | `PLUGIN_URL`, `JENKINS_URL`                     | Yes           | Jenkins base URL (e.g., `http://jenkins.example.com/`) |
-| User          | `--user`, `-u`       | `PLUGIN_USER`, `JENKINS_USER`                   | Conditional\* | Jenkins username                                       |
-| Token         | `--token`, `-t`      | `PLUGIN_TOKEN`, `JENKINS_TOKEN`                 | Conditional\* | Jenkins API token                                      |
-| Remote Token  | `--remote-token`     | `PLUGIN_REMOTE_TOKEN`, `JENKINS_REMOTE_TOKEN`   | Conditional\* | Jenkins remote trigger token                           |
-| Job           | `--job`, `-j`        | `PLUGIN_JOB`, `JENKINS_JOB`                     | Yes           | Jenkins job name(s) - can specify multiple             |
-| Parameters    | `--parameters`, `-p` | `PLUGIN_PARAMETERS`, `JENKINS_PARAMETERS`       | No            | Build parameters in `key=value` format                 |
-| Insecure      | `--insecure`         | `PLUGIN_INSECURE`, `JENKINS_INSECURE`           | No            | Allow insecure SSL connections (default: false)        |
-| Wait          | `--wait`             | `PLUGIN_WAIT`, `JENKINS_WAIT`                   | No            | Wait for job completion (default: false)               |
-| Poll Interval | `--poll-interval`    | `PLUGIN_POLL_INTERVAL`, `JENKINS_POLL_INTERVAL` | No            | Interval between status checks (default: 10s)          |
-| Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m) |
+| Parameter     | CLI Flag             | Environment Variable                            | Required      | Description                                                       |
+| ------------- | -------------------- | ----------------------------------------------- | ------------- | ----------------------------------------------------------------- |
+| Host          | `--host`             | `PLUGIN_URL`, `JENKINS_URL`                     | Yes           | Jenkins base URL (e.g., `http://jenkins.example.com/`)            |
+| User          | `--user`, `-u`       | `PLUGIN_USER`, `JENKINS_USER`                   | Conditional\* | Jenkins username                                                  |
+| Token         | `--token`, `-t`      | `PLUGIN_TOKEN`, `JENKINS_TOKEN`                 | Conditional\* | Jenkins API token                                                 |
+| Remote Token  | `--remote-token`     | `PLUGIN_REMOTE_TOKEN`, `JENKINS_REMOTE_TOKEN`   | Conditional\* | Jenkins remote trigger token                                      |
+| Job           | `--job`, `-j`        | `PLUGIN_JOB`, `JENKINS_JOB`                     | Yes           | Jenkins job name(s) - can specify multiple                        |
+| Parameters    | `--parameters`, `-p` | `PLUGIN_PARAMETERS`, `JENKINS_PARAMETERS`       | No            | Build parameters in multi-line `key=value` format (one per line)  |
+| Insecure      | `--insecure`         | `PLUGIN_INSECURE`, `JENKINS_INSECURE`           | No            | Allow insecure SSL connections (default: false)                   |
+| Wait          | `--wait`             | `PLUGIN_WAIT`, `JENKINS_WAIT`                   | No            | Wait for job completion (default: false)                          |
+| Poll Interval | `--poll-interval`    | `PLUGIN_POLL_INTERVAL`, `JENKINS_POLL_INTERVAL` | No            | Interval between status checks (default: 10s)                     |
+| Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m)            |
 
 **Authentication Requirements**: You must provide either:
 
 - `user` + `token` (API token authentication), OR
 - `remote-token` (remote trigger token authentication)
+
+**Parameters Format**: The `parameters` field accepts a multi-line string where each line contains one `key=value` pair:
+
+- Each parameter should be on a separate line
+- Format: `KEY=VALUE` (one per line)
+- Empty lines are automatically ignored
+- Whitespace-only lines are skipped
+- Keys are trimmed of surrounding whitespace
+- Values preserve intentional spaces
+- Values can contain `=` signs (everything after the first `=` is treated as the value)
 
 ## Usage
 
@@ -168,8 +178,21 @@ drone-jenkins \
   --user appleboy \
   --token XXXXXXXX \
   --job my-jenkins-job \
-  --parameters "ENVIRONMENT=production" \
-  --parameters "VERSION=1.0.0"
+  --parameters $'ENVIRONMENT=production\nVERSION=1.0.0'
+```
+
+Or using environment variable:
+
+```bash
+export JENKINS_PARAMETERS="ENVIRONMENT=production
+VERSION=1.0.0
+BRANCH=main"
+
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --user appleboy \
+  --token XXXXXXXX \
+  --job my-jenkins-job
 ```
 
 **Using remote token authentication:**
@@ -226,7 +249,7 @@ docker run --rm \
   -e JENKINS_USER=appleboy \
   -e JENKINS_TOKEN=xxxxxxx \
   -e JENKINS_JOB=my-jenkins-job \
-  -e JENKINS_PARAMETERS="ENVIRONMENT=production,VERSION=1.0.0" \
+  -e JENKINS_PARAMETERS=$'ENVIRONMENT=production\nVERSION=1.0.0\nBRANCH=main' \
   ghcr.io/appleboy/drone-jenkins
 ```
 
@@ -277,10 +300,11 @@ steps:
       job:
         - deploy-frontend
         - deploy-backend
-      parameters:
-        - ENVIRONMENT=production
-        - VERSION=${DRONE_TAG}
-        - COMMIT_SHA=${DRONE_COMMIT_SHA}
+      parameters: |
+        ENVIRONMENT=production
+        VERSION=${DRONE_TAG}
+        COMMIT_SHA=${DRONE_COMMIT_SHA}
+        BRANCH=${DRONE_BRANCH}
 ```
 
 **Using remote token:**

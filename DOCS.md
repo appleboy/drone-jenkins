@@ -48,6 +48,37 @@ Example configuration with jobs in the folder:
 
 It will trigger the URL of Jenkins job like as `http://example.com/job/folder_name/job/job_name/`
 
+Example configuration with build parameters:
+
+```yaml
+- name: trigger jenkins job
+  image: appleboy/drone-jenkins
+  settings:
+    url: http://example.com
+    user: appleboy
+    token: xxxxxxxxxx
+    job: parameterized-job
+    parameters: |
+      ENVIRONMENT=production
+      VERSION=${DRONE_TAG}
+      COMMIT_SHA=${DRONE_COMMIT_SHA}
+```
+
+Example configuration with wait for completion:
+
+```yaml
+- name: trigger jenkins job and wait
+  image: appleboy/drone-jenkins
+  settings:
+    url: http://example.com
+    user: appleboy
+    token: xxxxxxxxxx
+    job: deploy-job
+    wait: true
+    poll_interval: 15s
+    timeout: 1h
+```
+
 ## Parameter Reference
 
 url
@@ -61,3 +92,21 @@ token
 
 job
 : jenkins job name
+
+parameters
+: build parameters in multi-line `key=value` format (one per line)
+
+wait
+: wait for job completion (default: false)
+
+poll_interval
+: interval between status checks when waiting (default: 10s)
+
+timeout
+: maximum time to wait for job completion (default: 30m)
+
+insecure
+: allow insecure SSL connections (default: false)
+
+remote_token
+: jenkins remote trigger token (alternative to user/token authentication)
