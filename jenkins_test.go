@@ -16,7 +16,7 @@ func TestParseJobPath(t *testing.T) {
 		Username: "appleboy",
 		Token:    "1234",
 	}
-	jenkins := NewJenkins(auth, "http://example.com", "", false)
+	jenkins := NewJenkins(auth, "http://example.com", "", false, false)
 
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("/foo/"))
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("foo/"))
@@ -29,7 +29,7 @@ func TestUnSupportProtocol(t *testing.T) {
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, "example.com", "", false)
+	jenkins := NewJenkins(auth, "example.com", "", false, false)
 
 	queueID, err := jenkins.trigger("drone-jenkins", nil)
 	assert.NotNil(t, err)
@@ -50,7 +50,7 @@ func TestTriggerBuild(t *testing.T) {
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, server.URL, "remote-token", false)
+	jenkins := NewJenkins(auth, server.URL, "remote-token", false, false)
 
 	params := url.Values{"param": []string{"value"}}
 	queueID, err := jenkins.trigger("drone-jenkins", params)
@@ -110,7 +110,7 @@ func TestPostAndGetLocation(t *testing.T) {
 				Username: "test",
 				Token:    "test",
 			}
-			jenkins := NewJenkins(auth, server.URL, "", false)
+			jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 			queueID, err := jenkins.postAndGetLocation("/test", nil)
 
@@ -186,7 +186,7 @@ func TestGetQueueItem(t *testing.T) {
 				Username: "test",
 				Token:    "test",
 			}
-			jenkins := NewJenkins(auth, server.URL, "", false)
+			jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 			queueItem, err := jenkins.getQueueItem(tt.queueID)
 
@@ -274,7 +274,7 @@ func TestGetBuildInfo(t *testing.T) {
 				Username: "test",
 				Token:    "test",
 			}
-			jenkins := NewJenkins(auth, server.URL, "", false)
+			jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 			buildInfo, err := jenkins.getBuildInfo(tt.jobName, tt.buildNumber)
 
@@ -332,7 +332,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false)
+		jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -364,7 +364,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false)
+		jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -404,7 +404,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false)
+		jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -449,7 +449,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false)
+		jenkins := NewJenkins(auth, server.URL, "", false, false)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",

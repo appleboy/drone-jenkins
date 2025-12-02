@@ -23,6 +23,7 @@ type (
 		Wait         bool          // Whether to wait for job completion
 		PollInterval time.Duration // Interval between status checks (default: 10s)
 		Timeout      time.Duration // Maximum time to wait for job completion (default: 30m)
+		Debug        bool          // Enable debug mode to show detailed parameter information
 	}
 )
 
@@ -104,7 +105,7 @@ func (p Plugin) Exec() error {
 	}
 
 	// Initialize Jenkins client
-	jenkins := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure)
+	jenkins := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure, p.Debug)
 
 	// Parse job parameters
 	params := parseParameters(p.Parameters)
