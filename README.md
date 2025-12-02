@@ -40,6 +40,7 @@ A [Drone](https://github.com/drone/drone) plugin for triggering [Jenkins](https:
 - Support for Jenkins build parameters
 - Multiple authentication methods (API token or remote trigger token)
 - Wait for job completion with configurable polling and timeout
+- Debug mode with detailed parameter information and secure token masking
 - SSL/TLS support with optional insecure mode
 - Cross-platform support (Linux, macOS, Windows)
 - Available as binary, Docker image, or Drone plugin
@@ -129,6 +130,7 @@ Alternatively, you can use a remote trigger token configured in your Jenkins job
 | Wait          | `--wait`             | `PLUGIN_WAIT`, `JENKINS_WAIT`                   | No            | Wait for job completion (default: false)                          |
 | Poll Interval | `--poll-interval`    | `PLUGIN_POLL_INTERVAL`, `JENKINS_POLL_INTERVAL` | No            | Interval between status checks (default: 10s)                     |
 | Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m)            |
+| Debug         | `--debug`            | `PLUGIN_DEBUG`, `JENKINS_DEBUG`                 | No            | Enable debug mode to show detailed parameter information (default: false) |
 
 **Authentication Requirements**: You must provide either:
 
@@ -217,6 +219,17 @@ drone-jenkins \
   --timeout 1h
 ```
 
+**With debug mode:**
+
+```bash
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --user appleboy \
+  --token XXXXXXXX \
+  --job my-jenkins-job \
+  --debug
+```
+
 ### Docker
 
 **Single job:**
@@ -264,6 +277,18 @@ docker run --rm \
   -e JENKINS_WAIT=true \
   -e JENKINS_POLL_INTERVAL=15s \
   -e JENKINS_TIMEOUT=1h \
+  ghcr.io/appleboy/drone-jenkins
+```
+
+**With debug mode:**
+
+```bash
+docker run --rm \
+  -e JENKINS_URL=http://jenkins.example.com/ \
+  -e JENKINS_USER=appleboy \
+  -e JENKINS_TOKEN=xxxxxxx \
+  -e JENKINS_JOB=my-jenkins-job \
+  -e JENKINS_DEBUG=true \
   ghcr.io/appleboy/drone-jenkins
 ```
 
@@ -335,6 +360,21 @@ steps:
       wait: true
       poll_interval: 15s
       timeout: 1h
+```
+
+**With debug mode:**
+
+```yaml
+steps:
+  - name: trigger-jenkins
+    image: ghcr.io/appleboy/drone-jenkins
+    settings:
+      url: http://jenkins.example.com/
+      user: appleboy
+      token:
+        from_secret: jenkins_token
+      job: my-jenkins-job
+      debug: true
 ```
 
 For more detailed examples and advanced configurations, see [DOCS.md](DOCS.md).
