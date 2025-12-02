@@ -28,7 +28,7 @@ type (
 		BaseURL string
 		Token   string // Remote trigger token
 		Client  *http.Client
-		Debug   bool   // Enable debug mode to show detailed information
+		Debug   bool // Enable debug mode to show detailed information
 	}
 
 	// QueueItem represents a Jenkins queue item response
@@ -352,7 +352,9 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) (int, error) {
 			}
 
 			log.Println("Parameters:")
-			godump.Dump(displayParams)
+			if err := godump.Dump(displayParams); err != nil {
+				log.Printf("warning: failed to dump parameters: %v", err)
+			}
 		} else {
 			log.Println("Parameters: (none)")
 		}

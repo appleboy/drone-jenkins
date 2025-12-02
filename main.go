@@ -222,7 +222,9 @@ func run(c *cli.Context) error {
 			Debug:        plugin.Debug,
 		}
 
-		godump.Dump(displayPlugin)
+		if err := godump.Dump(displayPlugin); err != nil {
+			log.Printf("warning: failed to dump plugin configuration: %v", err)
+		}
 		log.Println("========================================")
 	}
 
