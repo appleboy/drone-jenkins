@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/yassinebenaid/godump"
 )
 
 type (
@@ -26,6 +28,7 @@ type (
 		BaseURL string
 		Token   string // Remote trigger token
 		Client  *http.Client
+		Debug   bool   // Enable debug mode to show detailed information
 	}
 
 	// QueueItem represents a Jenkins queue item response
@@ -53,7 +56,7 @@ type (
 )
 
 // NewJenkins is initial Jenkins object
-func NewJenkins(auth *Auth, url string, token string, insecure bool) *Jenkins {
+func NewJenkins(auth *Auth, url string, token string, insecure bool, debug bool) *Jenkins {
 	url = strings.TrimRight(url, "/")
 
 	client := http.DefaultClient
@@ -71,6 +74,7 @@ func NewJenkins(auth *Auth, url string, token string, insecure bool) *Jenkins {
 		BaseURL: url,
 		Token:   token,
 		Client:  client,
+		Debug:   debug,
 	}
 }
 
@@ -319,6 +323,40 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) (int, error) {
 		urlPath = jenkins.parseJobPath(job) + "/buildWithParameters"
 	} else {
 		urlPath = jenkins.parseJobPath(job) + "/build"
+	}
+
+	// Debug: Display parameters being sent
+	if jenkins.Debug {
+		log.Println("=== Debug Mode: Jenkins Job Trigger ===")
+		log.Printf("Job: %s", job)
+		log.Printf("URL Path: %s", urlPath)
+
+		// Build the full URL for display
+		fullURL := jenkins.buildURL(urlPath, params)
+		// Mask token in URL for display
+		if jenkins.Token != "" {
+			fullURL = strings.Replace(fullURL, "token="+jenkins.Token, "token=***MASKED***", 1)
+		}
+		log.Printf("Full URL: %s", fullURL)
+
+		if len(params) > 0 {
+			// Create a copy of params with masked token for display
+			displayParams := url.Values{}
+			for key, values := range params {
+				if key == "token" {
+					// Mask token values for security
+					displayParams[key] = []string{"***MASKED***"}
+				} else {
+					displayParams[key] = values
+				}
+			}
+
+			log.Println("Parameters:")
+			godump.Dump(displayParams)
+		} else {
+			log.Println("Parameters: (none)")
+		}
+		log.Println("======================================")
 	}
 
 	// All params (including token) are passed as query parameters

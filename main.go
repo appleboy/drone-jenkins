@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	"github.com/yassinebenaid/godump"
 )
 
 // Version set at compile-time
@@ -22,6 +23,14 @@ ________                                            ____.              __   .__
         \/                  \/     \/                        \/     \/     \/       \/     \/
                                                                     version: {{.Version}}
 `
+
+// maskToken masks a token string for secure display
+func maskToken(token string) string {
+	if token == "" {
+		return ""
+	}
+	return "***MASKED***"
+}
 
 func main() {
 	// Load env-file if it exists first
@@ -110,6 +119,11 @@ func main() {
 			Value:   30 * time.Minute,
 			EnvVars: []string{"PLUGIN_TIMEOUT", "JENKINS_TIMEOUT", "INPUT_TIMEOUT"},
 		},
+		&cli.BoolFlag{
+			Name:    "debug",
+			Usage:   "enable debug mode to show detailed parameter information",
+			EnvVars: []string{"PLUGIN_DEBUG", "JENKINS_DEBUG", "INPUT_DEBUG"},
+		},
 	}
 
 	// Override a template
@@ -174,6 +188,42 @@ func run(c *cli.Context) error {
 		Wait:         c.Bool("wait"),
 		PollInterval: c.Duration("poll-interval"),
 		Timeout:      c.Duration("timeout"),
+		Debug:        c.Bool("debug"),
+	}
+
+	// Display plugin configuration in debug mode
+	if plugin.Debug {
+		log.Println("=== Debug Mode: Plugin Configuration ===")
+
+		// Create a display copy with masked sensitive data
+		displayPlugin := struct {
+			BaseURL      string
+			Username     string
+			Token        string
+			RemoteToken  string
+			Job          []string
+			Insecure     bool
+			Parameters   []string
+			Wait         bool
+			PollInterval time.Duration
+			Timeout      time.Duration
+			Debug        bool
+		}{
+			BaseURL:      plugin.BaseURL,
+			Username:     plugin.Username,
+			Token:        maskToken(plugin.Token),
+			RemoteToken:  maskToken(plugin.RemoteToken),
+			Job:          plugin.Job,
+			Insecure:     plugin.Insecure,
+			Parameters:   plugin.Parameters,
+			Wait:         plugin.Wait,
+			PollInterval: plugin.PollInterval,
+			Timeout:      plugin.Timeout,
+			Debug:        plugin.Debug,
+		}
+
+		godump.Dump(displayPlugin)
+		log.Println("========================================")
 	}
 
 	return plugin.Exec()
