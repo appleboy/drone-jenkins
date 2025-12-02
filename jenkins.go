@@ -293,6 +293,16 @@ func (jenkins *Jenkins) waitForCompletion(
 				buildNumber,
 				buildInfo.Result,
 			)
+
+			// Debug: Display final build info
+			if jenkins.Debug {
+				log.Println("=== Debug Mode: Build Result ===")
+				if err := godump.Dump(buildInfo); err != nil {
+					log.Printf("warning: failed to dump build info: %v", err)
+				}
+				log.Println("================================")
+			}
+
 			return buildInfo, nil
 		}
 
