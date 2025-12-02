@@ -19,7 +19,7 @@ type (
 		RemoteToken  string        // Optional remote trigger token for additional security
 		Job          []string      // List of Jenkins job names to trigger
 		Insecure     bool          // Whether to skip TLS certificate verification
-		Parameters   []string      // Job parameters in key=value format
+		Parameters   string        // Job parameters in key=value format (one per line)
 		Wait         bool          // Whether to wait for job completion
 		PollInterval time.Duration // Interval between status checks (default: 10s)
 		Timeout      time.Duration // Maximum time to wait for job completion (default: 30m)
@@ -42,15 +42,27 @@ func trimWhitespaceFromSlice(items []string) []string {
 	return result
 }
 
-// parseParameters converts a slice of key=value strings into url.Values.
+// parseParameters converts a multi-line string of key=value pairs into url.Values.
+// Each line should contain one key=value pair.
 // It logs a warning for any parameters that don't match the expected format.
-func parseParameters(params []string) url.Values {
+func parseParameters(params string) url.Values {
 	values := url.Values{}
 
-	for _, param := range params {
-		parts := strings.SplitN(param, "=", 2)
+	// Split by newlines and process each line
+	lines := strings.Split(params, "\n")
+	for _, line := range lines {
+		// Skip empty lines
+		trimmedLine := strings.TrimSpace(line)
+		if trimmedLine == "" {
+			continue
+		}
+
+		parts := strings.SplitN(trimmedLine, "=", 2)
 		if len(parts) != 2 {
-			log.Printf("warning: skipping invalid parameter format (expected key=value): %q", param)
+			log.Printf(
+				"warning: skipping invalid parameter format (expected key=value): %q",
+				trimmedLine,
+			)
 			continue
 		}
 
@@ -58,7 +70,7 @@ func parseParameters(params []string) url.Values {
 		value := parts[1] // Keep value as-is to preserve intentional spaces
 
 		if key == "" {
-			log.Printf("warning: skipping parameter with empty key: %q", param)
+			log.Printf("warning: skipping parameter with empty key: %q", trimmedLine)
 			continue
 		}
 

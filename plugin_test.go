@@ -122,12 +122,12 @@ func TestTrimWhitespaceFromSlice(t *testing.T) {
 func TestParseParameters(t *testing.T) {
 	tests := []struct {
 		name     string
-		input    []string
+		input    string
 		expected url.Values
 	}{
 		{
 			name:  "valid parameters",
-			input: []string{"key1=value1", "key2=value2"},
+			input: "key1=value1\nkey2=value2",
 			expected: url.Values{
 				"key1": []string{"value1"},
 				"key2": []string{"value2"},
@@ -135,38 +135,38 @@ func TestParseParameters(t *testing.T) {
 		},
 		{
 			name:  "parameter with multiple equals signs",
-			input: []string{"key=value=with=equals"},
+			input: "key=value=with=equals",
 			expected: url.Values{
 				"key": []string{"value=with=equals"},
 			},
 		},
 		{
 			name:  "parameter with spaces in value",
-			input: []string{"key=value with spaces"},
+			input: "key=value with spaces",
 			expected: url.Values{
 				"key": []string{"value with spaces"},
 			},
 		},
 		{
 			name:  "parameter with empty value",
-			input: []string{"key="},
+			input: "key=",
 			expected: url.Values{
 				"key": []string{""},
 			},
 		},
 		{
 			name:     "invalid parameter format (no equals)",
-			input:    []string{"invalid"},
+			input:    "invalid",
 			expected: url.Values{},
 		},
 		{
 			name:     "parameter with empty key",
-			input:    []string{"=value"},
+			input:    "=value",
 			expected: url.Values{},
 		},
 		{
 			name:  "mixed valid and invalid",
-			input: []string{"valid=yes", "invalid", "also=valid"},
+			input: "valid=yes\ninvalid\nalso=valid",
 			expected: url.Values{
 				"valid": []string{"yes"},
 				"also":  []string{"valid"},
@@ -174,15 +174,31 @@ func TestParseParameters(t *testing.T) {
 		},
 		{
 			name:  "key with surrounding whitespace",
-			input: []string{"  key  =value"},
+			input: "  key  =value",
 			expected: url.Values{
 				"key": []string{"value"},
 			},
 		},
 		{
-			name:     "empty slice",
-			input:    []string{},
+			name:     "empty string",
+			input:    "",
 			expected: url.Values{},
+		},
+		{
+			name:  "multiple empty lines",
+			input: "key1=value1\n\n\nkey2=value2",
+			expected: url.Values{
+				"key1": []string{"value1"},
+				"key2": []string{"value2"},
+			},
+		},
+		{
+			name:  "lines with whitespace only",
+			input: "key1=value1\n   \n\t\nkey2=value2",
+			expected: url.Values{
+				"key1": []string{"value1"},
+				"key2": []string{"value2"},
+			},
 		},
 	}
 
@@ -333,7 +349,7 @@ func TestExecWithParameters(t *testing.T) {
 		Username:   "foo",
 		Token:      "bar",
 		Job:        []string{"parameterized-job"},
-		Parameters: []string{"branch=main", "environment=production"},
+		Parameters: "branch=main\nenvironment=production",
 	}
 
 	err := plugin.Exec()

@@ -92,10 +92,10 @@ func main() {
 			Usage:   "allow insecure server connections when using SSL",
 			EnvVars: []string{"PLUGIN_INSECURE", "JENKINS_INSECURE", "INPUT_INSECURE"},
 		},
-		&cli.StringSliceFlag{
+		&cli.StringFlag{
 			Name:    "parameters",
 			Aliases: []string{"p"},
-			Usage:   "jenkins build parameters",
+			Usage:   "jenkins build parameters (multi-line format: key=value, one per line)",
 			EnvVars: []string{"PLUGIN_PARAMETERS", "JENKINS_PARAMETERS", "INPUT_PARAMETERS"},
 		},
 		&cli.BoolFlag{
@@ -184,7 +184,7 @@ func run(c *cli.Context) error {
 		RemoteToken:  c.String("remote-token"),
 		Job:          c.StringSlice("job"),
 		Insecure:     c.Bool("insecure"),
-		Parameters:   c.StringSlice("parameters"),
+		Parameters:   c.String("parameters"),
 		Wait:         c.Bool("wait"),
 		PollInterval: c.Duration("poll-interval"),
 		Timeout:      c.Duration("timeout"),
@@ -203,7 +203,7 @@ func run(c *cli.Context) error {
 			RemoteToken  string
 			Job          []string
 			Insecure     bool
-			Parameters   []string
+			Parameters   string
 			Wait         bool
 			PollInterval time.Duration
 			Timeout      time.Duration
