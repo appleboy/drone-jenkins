@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appleboy/com/gh"
 	"github.com/yassinebenaid/godump"
 )
 
@@ -301,6 +302,14 @@ func (jenkins *Jenkins) waitForCompletion(
 					log.Printf("warning: failed to dump build info: %v", err)
 				}
 				log.Println("================================")
+			}
+
+			// Set GitHub Actions output
+			if err := gh.SetOutput(map[string]string{
+				"result": buildInfo.Result,
+				"url":    buildInfo.URL,
+			}); err != nil {
+				log.Printf("warning: failed to set GitHub output: %v", err)
 			}
 
 			return buildInfo, nil
