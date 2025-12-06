@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -56,27 +58,108 @@ type (
 	}
 )
 
-// NewJenkins is initial Jenkins object
-func NewJenkins(auth *Auth, url string, token string, insecure bool, debug bool) *Jenkins {
-	url = strings.TrimRight(url, "/")
+// loadCACert loads a CA certificate from various sources:
+// - PEM content (if it starts with "-----BEGIN")
+// - File path (if the file exists)
+// - HTTP/HTTPS URL (if it starts with "http://" or "https://")
+func loadCACert(caCert string) ([]byte, error) {
+	if caCert == "" {
+		return nil, nil
+	}
 
-	client := http.DefaultClient
+	// Check if it's PEM content (starts with BEGIN marker)
+	if strings.HasPrefix(strings.TrimSpace(caCert), "-----BEGIN") {
+		return []byte(caCert), nil
+	}
+
+	// Check if it's an HTTP/HTTPS URL
+	if strings.HasPrefix(caCert, "http://") || strings.HasPrefix(caCert, "https://") {
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, caCert, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request for CA certificate URL: %w", err)
+		}
+		resp, err := http.DefaultClient.Do(req) // #nosec G107 -- URL is user-provided configuration
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch CA certificate from URL: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("failed to fetch CA certificate: HTTP %d", resp.StatusCode)
+		}
+
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read CA certificate from URL: %w", err)
+		}
+		return data, nil
+	}
+
+	// Otherwise, treat it as a file path
+	data, err := os.ReadFile(caCert)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CA certificate file: %w", err)
+	}
+	return data, nil
+}
+
+// NewJenkins is initial Jenkins object
+func NewJenkins(
+	auth *Auth,
+	baseURL string,
+	token string,
+	insecure bool,
+	caCert string,
+	debug bool,
+) (*Jenkins, error) {
+	baseURL = strings.TrimRight(baseURL, "/")
+
+	// Load CA certificate if provided
+	caCertData, err := loadCACert(caCert)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load CA certificate: %w", err)
+	}
+
+	// Build TLS configuration
+	var tlsConfig *tls.Config
 	if insecure {
+		// #nosec G402 -- InsecureSkipVerify is intentionally configurable by user
+		tlsConfig = &tls.Config{InsecureSkipVerify: true}
+	} else if caCertData != nil {
+		// Create certificate pool with custom CA
+		certPool, err := x509.SystemCertPool()
+		if err != nil {
+			// Fall back to empty pool if system pool unavailable
+			certPool = x509.NewCertPool()
+		}
+
+		if !certPool.AppendCertsFromPEM(caCertData) {
+			return nil, fmt.Errorf("failed to parse CA certificate")
+		}
+
+		tlsConfig = &tls.Config{
+			RootCAs:    certPool,
+			MinVersion: tls.VersionTLS12,
+		}
+	}
+
+	// Create HTTP client
+	client := http.DefaultClient
+	if tlsConfig != nil {
 		client = &http.Client{
 			Transport: &http.Transport{
-				// #nosec G402 -- InsecureSkipVerify is intentionally configurable by user
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				TLSClientConfig: tlsConfig,
 			},
 		}
 	}
 
 	return &Jenkins{
 		Auth:    auth,
-		BaseURL: url,
+		BaseURL: baseURL,
 		Token:   token,
 		Client:  client,
 		Debug:   debug,
-	}
+	}, nil
 }
 
 func (jenkins *Jenkins) buildURL(path string, params url.Values) (requestURL string) {
