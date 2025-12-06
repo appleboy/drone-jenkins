@@ -19,6 +19,7 @@ type (
 		RemoteToken  string        // Optional remote trigger token for additional security
 		Job          []string      // List of Jenkins job names to trigger
 		Insecure     bool          // Whether to skip TLS certificate verification
+		CACert       string        // Custom CA certificate (PEM content, file path, or HTTP URL)
 		Parameters   string        // Job parameters in key=value format (one per line)
 		Wait         bool          // Whether to wait for job completion
 		PollInterval time.Duration // Interval between status checks (default: 10s)
@@ -117,7 +118,10 @@ func (p Plugin) Exec() error {
 	}
 
 	// Initialize Jenkins client
-	jenkins := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure, p.Debug)
+	jenkins, err := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure, p.CACert, p.Debug)
+	if err != nil {
+		return fmt.Errorf("failed to initialize Jenkins client: %w", err)
+	}
 
 	// Parse job parameters
 	params := parseParameters(p.Parameters)

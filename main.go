@@ -93,6 +93,11 @@ func main() {
 			EnvVars: []string{"PLUGIN_INSECURE", "JENKINS_INSECURE", "INPUT_INSECURE"},
 		},
 		&cli.StringFlag{
+			Name:    "ca-cert",
+			Usage:   "custom CA certificate (PEM content, file path, or HTTP URL)",
+			EnvVars: []string{"PLUGIN_CA_CERT", "JENKINS_CA_CERT", "INPUT_CA_CERT"},
+		},
+		&cli.StringFlag{
 			Name:    "parameters",
 			Aliases: []string{"p"},
 			Usage:   "jenkins build parameters (multi-line format: key=value, one per line)",
@@ -184,6 +189,7 @@ func run(c *cli.Context) error {
 		RemoteToken:  c.String("remote-token"),
 		Job:          c.StringSlice("job"),
 		Insecure:     c.Bool("insecure"),
+		CACert:       c.String("ca-cert"),
 		Parameters:   c.String("parameters"),
 		Wait:         c.Bool("wait"),
 		PollInterval: c.Duration("poll-interval"),
@@ -203,6 +209,7 @@ func run(c *cli.Context) error {
 			RemoteToken  string
 			Job          []string
 			Insecure     bool
+			CACert       string
 			Parameters   string
 			Wait         bool
 			PollInterval time.Duration
@@ -215,6 +222,7 @@ func run(c *cli.Context) error {
 			RemoteToken:  maskToken(plugin.RemoteToken),
 			Job:          plugin.Job,
 			Insecure:     plugin.Insecure,
+			CACert:       plugin.CACert,
 			Parameters:   plugin.Parameters,
 			Wait:         plugin.Wait,
 			PollInterval: plugin.PollInterval,

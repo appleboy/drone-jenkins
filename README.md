@@ -41,7 +41,7 @@ A [Drone](https://github.com/drone/drone) plugin for triggering [Jenkins](https:
 - Multiple authentication methods (API token or remote trigger token)
 - Wait for job completion with configurable polling and timeout
 - Debug mode with detailed parameter information and secure token masking
-- SSL/TLS support with optional insecure mode
+- SSL/TLS support with custom CA certificates (PEM content, file path, or URL)
 - Cross-platform support (Linux, macOS, Windows)
 - Available as binary, Docker image, or Drone plugin
 
@@ -127,6 +127,7 @@ Alternatively, you can use a remote trigger token configured in your Jenkins job
 | Job           | `--job`, `-j`        | `PLUGIN_JOB`, `JENKINS_JOB`                     | Yes           | Jenkins job name(s) - can specify multiple                        |
 | Parameters    | `--parameters`, `-p` | `PLUGIN_PARAMETERS`, `JENKINS_PARAMETERS`       | No            | Build parameters in multi-line `key=value` format (one per line)  |
 | Insecure      | `--insecure`         | `PLUGIN_INSECURE`, `JENKINS_INSECURE`           | No            | Allow insecure SSL connections (default: false)                   |
+| CA Cert       | `--ca-cert`          | `PLUGIN_CA_CERT`, `JENKINS_CA_CERT`             | No            | Custom CA certificate (PEM content, file path, or HTTP URL)       |
 | Wait          | `--wait`             | `PLUGIN_WAIT`, `JENKINS_WAIT`                   | No            | Wait for job completion (default: false)                          |
 | Poll Interval | `--poll-interval`    | `PLUGIN_POLL_INTERVAL`, `JENKINS_POLL_INTERVAL` | No            | Interval between status checks (default: 10s)                     |
 | Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m)            |
@@ -230,6 +231,26 @@ drone-jenkins \
   --debug
 ```
 
+**With custom CA certificate:**
+
+```bash
+# Using a file path
+drone-jenkins \
+  --host https://jenkins.example.com/ \
+  --user appleboy \
+  --token XXXXXXXX \
+  --job my-jenkins-job \
+  --ca-cert /path/to/ca.pem
+
+# Using a URL
+drone-jenkins \
+  --host https://jenkins.example.com/ \
+  --user appleboy \
+  --token XXXXXXXX \
+  --job my-jenkins-job \
+  --ca-cert https://example.com/ca-bundle.crt
+```
+
 ### Docker
 
 **Single job:**
@@ -289,6 +310,29 @@ docker run --rm \
   -e JENKINS_TOKEN=xxxxxxx \
   -e JENKINS_JOB=my-jenkins-job \
   -e JENKINS_DEBUG=true \
+  ghcr.io/appleboy/drone-jenkins
+```
+
+**With custom CA certificate:**
+
+```bash
+# Using a mounted certificate file
+docker run --rm \
+  -v /path/to/ca.pem:/ca.pem:ro \
+  -e JENKINS_URL=https://jenkins.example.com/ \
+  -e JENKINS_USER=appleboy \
+  -e JENKINS_TOKEN=xxxxxxx \
+  -e JENKINS_JOB=my-jenkins-job \
+  -e JENKINS_CA_CERT=/ca.pem \
+  ghcr.io/appleboy/drone-jenkins
+
+# Using a URL
+docker run --rm \
+  -e JENKINS_URL=https://jenkins.example.com/ \
+  -e JENKINS_USER=appleboy \
+  -e JENKINS_TOKEN=xxxxxxx \
+  -e JENKINS_JOB=my-jenkins-job \
+  -e JENKINS_CA_CERT=https://example.com/ca-bundle.crt \
   ghcr.io/appleboy/drone-jenkins
 ```
 
@@ -375,6 +419,22 @@ steps:
         from_secret: jenkins_token
       job: my-jenkins-job
       debug: true
+```
+
+**With custom CA certificate:**
+
+```yaml
+steps:
+  - name: trigger-jenkins
+    image: ghcr.io/appleboy/drone-jenkins
+    settings:
+      url: https://jenkins.example.com/
+      user: appleboy
+      token:
+        from_secret: jenkins_token
+      job: my-jenkins-job
+      ca_cert:
+        from_secret: jenkins_ca_cert
 ```
 
 For more detailed examples and advanced configurations, see [DOCS.md](DOCS.md).

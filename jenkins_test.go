@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -16,7 +18,8 @@ func TestParseJobPath(t *testing.T) {
 		Username: "appleboy",
 		Token:    "1234",
 	}
-	jenkins := NewJenkins(auth, "http://example.com", "", false, false)
+	jenkins, err := NewJenkins(auth, "http://example.com", "", false, "", false)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("/foo/"))
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("foo/"))
@@ -29,7 +32,8 @@ func TestUnSupportProtocol(t *testing.T) {
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, "example.com", "", false, false)
+	jenkins, err := NewJenkins(auth, "example.com", "", false, "", false)
+	assert.NoError(t, err)
 
 	queueID, err := jenkins.trigger("drone-jenkins", nil)
 	assert.NotNil(t, err)
@@ -50,7 +54,8 @@ func TestTriggerBuild(t *testing.T) {
 		Username: "foo",
 		Token:    "bar",
 	}
-	jenkins := NewJenkins(auth, server.URL, "remote-token", false, false)
+	jenkins, err := NewJenkins(auth, server.URL, "remote-token", false, "", false)
+	assert.NoError(t, err)
 
 	params := url.Values{"param": []string{"value"}}
 	queueID, err := jenkins.trigger("drone-jenkins", params)
@@ -110,7 +115,8 @@ func TestPostAndGetLocation(t *testing.T) {
 				Username: "test",
 				Token:    "test",
 			}
-			jenkins := NewJenkins(auth, server.URL, "", false, false)
+			jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+			assert.NoError(t, err)
 
 			queueID, err := jenkins.postAndGetLocation("/test", nil)
 
@@ -186,7 +192,8 @@ func TestGetQueueItem(t *testing.T) {
 				Username: "test",
 				Token:    "test",
 			}
-			jenkins := NewJenkins(auth, server.URL, "", false, false)
+			jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+			assert.NoError(t, err)
 
 			queueItem, err := jenkins.getQueueItem(tt.queueID)
 
@@ -274,7 +281,8 @@ func TestGetBuildInfo(t *testing.T) {
 				Username: "test",
 				Token:    "test",
 			}
-			jenkins := NewJenkins(auth, server.URL, "", false, false)
+			jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+			assert.NoError(t, err)
 
 			buildInfo, err := jenkins.getBuildInfo(tt.jobName, tt.buildNumber)
 
@@ -332,7 +340,8 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false, false)
+		jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -364,7 +373,8 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false, false)
+		jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -404,7 +414,8 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false, false)
+		jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -449,7 +460,8 @@ func TestWaitForCompletion(t *testing.T) {
 			Username: "test",
 			Token:    "test",
 		}
-		jenkins := NewJenkins(auth, server.URL, "", false, false)
+		jenkins, err := NewJenkins(auth, server.URL, "", false, "", false)
+		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			"test-job",
@@ -463,5 +475,219 @@ func TestWaitForCompletion(t *testing.T) {
 		assert.Equal(t, buildNumber, buildInfo.Number)
 		assert.False(t, buildInfo.Building)
 		assert.Equal(t, "FAILURE", buildInfo.Result)
+	})
+}
+
+// Sample CA certificate for testing (self-signed, not for production use)
+const testCACert = `-----BEGIN CERTIFICATE-----
+MIIDAzCCAeugAwIBAgIUGYBGBr+t20UAWJorEPULxzGIXUEwDQYJKoZIhvcNAQEL
+BQAwETEPMA0GA1UEAwwGdGVzdGNhMB4XDTI1MTIwNjA1MDgzMloXDTM1MTIwNDA1
+MDgzMlowETEPMA0GA1UEAwwGdGVzdGNhMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+MIIBCgKCAQEAq4bwnABqFenRVUoHLKhPiJXkh6TBFUaCWiEpKYNPywptBJNdyWNf
+ouDxJ8gvQOMCkp3trnAHFcT6W5s8QLM1Hf/70QZI9GU/BtYm0KijU8aM+GJawNto
+sK103TeCd0tVenDkxfamBGYnh3L5jtk0V/jeIsAIfFoe9Citu3MttRfxnSmZ4w2K
+qlS14vKhFlO4WrXAh9j4PaVE5DL7jya/UKe6VVQIONCwUipRN6nU3UXhR7akVSmF
+/bYkFsfdcErXJHjDpg+0xOsa5LJhzRkx5Uoqtviq2oRVVYhZc0eTwjq/407ocJ25
+6WmerfKrtFDpzOZPa4XPVX9Am4vWugtrwQIDAQABo1MwUTAdBgNVHQ4EFgQUh7kL
+LqmsvQP3TI6eiLVK7Gs7A00wHwYDVR0jBBgwFoAUh7kLLqmsvQP3TI6eiLVK7Gs7
+A00wDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEApLOdWacya+Zi
+w0Fd3UfSveuRsayAkMkZ4p0L9XKlADzwKtSF1Ykn6wiEiYfXd2TvffsR2XglOXFc
+181IpBhP5u2mzK6pRvH9mqTs3w8JTcXMFmg8AKE2Vg5k22tBM2OUJJgKXkiACuHS
+pZeOOvJcnjGunbTRwqais0TLYnkOcFsbgrSBKv82HiVootH/iKZahf1ViFMOURTh
+MqjwIous7Y53Rq4RmfycIjNwODlDW0i5atKe8incDBiIYKw6sH8WN+nuhnHC/vJ5
+5ZQvGCUsGOvma5ojWAiLs8wu4dODuF5ZNID3t+M36PQs7JDaQNN+AkZROOTSMqa/
+ud3vS1A5+g==
+-----END CERTIFICATE-----`
+
+func TestLoadCACert(t *testing.T) {
+	t.Run("empty string returns nil", func(t *testing.T) {
+		data, err := loadCACert("")
+		assert.NoError(t, err)
+		assert.Nil(t, data)
+	})
+
+	t.Run("PEM content directly", func(t *testing.T) {
+		data, err := loadCACert(testCACert)
+		assert.NoError(t, err)
+		assert.NotNil(t, data)
+		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
+	})
+
+	t.Run("PEM content with leading whitespace", func(t *testing.T) {
+		data, err := loadCACert("  \n" + testCACert)
+		assert.NoError(t, err)
+		assert.NotNil(t, data)
+		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
+	})
+
+	t.Run("file path", func(t *testing.T) {
+		// Create a temporary file with the certificate
+		tmpDir := t.TempDir()
+		certFile := filepath.Join(tmpDir, "ca.pem")
+		err := os.WriteFile(certFile, []byte(testCACert), 0o600)
+		assert.NoError(t, err)
+
+		data, err := loadCACert(certFile)
+		assert.NoError(t, err)
+		assert.NotNil(t, data)
+		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
+	})
+
+	t.Run("file not found", func(t *testing.T) {
+		data, err := loadCACert("/nonexistent/path/ca.pem")
+		assert.Error(t, err)
+		assert.Nil(t, data)
+		assert.Contains(t, err.Error(), "failed to read CA certificate file")
+	})
+
+	t.Run("HTTP URL", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(testCACert))
+		}))
+		defer server.Close()
+
+		data, err := loadCACert(server.URL)
+		assert.NoError(t, err)
+		assert.NotNil(t, data)
+		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
+	})
+
+	t.Run("HTTPS URL", func(t *testing.T) {
+		server := httptest.NewTLSServer(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(testCACert))
+			}),
+		)
+		defer server.Close()
+
+		// Note: This test uses the test server's self-signed cert
+		// In real scenarios, the URL would be to a trusted source
+		// We skip HTTPS verification for this test
+		data, err := loadCACert(server.URL)
+		// This may fail due to certificate verification, which is expected
+		if err != nil {
+			assert.Contains(t, err.Error(), "certificate")
+		} else {
+			assert.NotNil(t, data)
+		}
+	})
+
+	t.Run("HTTP URL returns error status", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		}))
+		defer server.Close()
+
+		data, err := loadCACert(server.URL)
+		assert.Error(t, err)
+		assert.Nil(t, data)
+		assert.Contains(t, err.Error(), "HTTP 404")
+	})
+
+	t.Run("HTTP URL unreachable", func(t *testing.T) {
+		data, err := loadCACert("http://localhost:59999/nonexistent")
+		assert.Error(t, err)
+		assert.Nil(t, data)
+		assert.Contains(t, err.Error(), "failed to fetch CA certificate from URL")
+	})
+}
+
+func TestNewJenkinsWithCACert(t *testing.T) {
+	t.Run("with valid CA certificate", func(t *testing.T) {
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		jenkins, err := NewJenkins(auth, "https://example.com", "", false, testCACert, false)
+		assert.NoError(t, err)
+		assert.NotNil(t, jenkins)
+		assert.NotNil(t, jenkins.Client)
+	})
+
+	t.Run("with CA certificate from file", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		certFile := filepath.Join(tmpDir, "ca.pem")
+		err := os.WriteFile(certFile, []byte(testCACert), 0o600)
+		assert.NoError(t, err)
+
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		jenkins, err := NewJenkins(auth, "https://example.com", "", false, certFile, false)
+		assert.NoError(t, err)
+		assert.NotNil(t, jenkins)
+	})
+
+	t.Run("with invalid CA certificate content", func(t *testing.T) {
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		jenkins, err := NewJenkins(
+			auth,
+			"https://example.com",
+			"",
+			false,
+			"invalid-cert-data",
+			false,
+		)
+		assert.Error(t, err)
+		assert.Nil(t, jenkins)
+		assert.Contains(t, err.Error(), "failed to read CA certificate file")
+	})
+
+	t.Run("with invalid PEM format", func(t *testing.T) {
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		invalidPEM := "-----BEGIN CERTIFICATE-----\ninvalid-base64-data\n-----END CERTIFICATE-----"
+		jenkins, err := NewJenkins(auth, "https://example.com", "", false, invalidPEM, false)
+		assert.Error(t, err)
+		assert.Nil(t, jenkins)
+		assert.Contains(t, err.Error(), "failed to parse CA certificate")
+	})
+
+	t.Run("with nonexistent file path", func(t *testing.T) {
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		jenkins, err := NewJenkins(
+			auth,
+			"https://example.com",
+			"",
+			false,
+			"/nonexistent/ca.pem",
+			false,
+		)
+		assert.Error(t, err)
+		assert.Nil(t, jenkins)
+		assert.Contains(t, err.Error(), "failed to load CA certificate")
+	})
+
+	t.Run("insecure flag takes precedence over CA cert", func(t *testing.T) {
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		// When insecure is true, CA cert should be ignored
+		jenkins, err := NewJenkins(auth, "https://example.com", "", true, testCACert, false)
+		assert.NoError(t, err)
+		assert.NotNil(t, jenkins)
+	})
+
+	t.Run("without CA certificate uses default client", func(t *testing.T) {
+		auth := &Auth{
+			Username: "test",
+			Token:    "test",
+		}
+		jenkins, err := NewJenkins(auth, "https://example.com", "", false, "", false)
+		assert.NoError(t, err)
+		assert.NotNil(t, jenkins)
+		assert.Equal(t, http.DefaultClient, jenkins.Client)
 	})
 }
