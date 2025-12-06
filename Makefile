@@ -46,6 +46,14 @@ all: build
 test:
 	@$(GO) test -v -cover -coverprofile coverage.txt ./... && echo "\n==>\033[32m Ok\033[m\n" || exit 1
 
+.PHONY: lint
+lint:
+	golangci-lint run -v
+
+.PHONY: fmt
+fmt:
+	golangci-lint fmt
+
 .PHONY: install
 install: $(GOFILES)
 	$(GO) install -v -tags '$(TAGS)' -ldflags '$(EXTLDFLAGS)-s -w $(LDFLAGS)' .
