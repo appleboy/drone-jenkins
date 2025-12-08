@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/appleboy/com v1.1.1
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/yassinebenaid/godump v0.11.1
 )
