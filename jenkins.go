@@ -181,34 +181,58 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	return jenkins.Client.Do(req)
 }
 
-func (jenkins *Jenkins) get(path string, params url.Values, body interface{}) error {
+func (jenkins *Jenkins) doGet(path string, params url.Values, body interface{}, needCookie bool) (error, string) {
 	requestURL := jenkins.buildURL(path, params)
 
 	req, err := http.NewRequestWithContext(context.Background(), "GET", requestURL, nil)
 	if err != nil {
-		return err
+		return err, ""
 	}
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
-		return err
+		return err, ""
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
+		return fmt.Errorf("failed to read response body: %w", err), ""
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected response code: %d, body: %s", resp.StatusCode, string(data))
+		return fmt.Errorf("unexpected response code: %d, body: %s", resp.StatusCode, string(data)), ""
 	}
 
 	if body == nil {
-		return nil
+		if needCookie {
+			return nil, resp.Header.Get("set-cookie")
+		}
+		return nil, ""
 	}
 
-	return json.Unmarshal(data, body)
+	unmarshalErr := json.Unmarshal(data, body)
+	if needCookie {
+		return unmarshalErr, resp.Header.Get("set-cookie")
+	}
+	return unmarshalErr, ""
+}
+
+func (jenkins *Jenkins) get(path string, params url.Values, body interface{}) error {
+	err, _ := jenkins.doGet(path, params, body, false)
+	return err
+}
+
+func (jenkins *Jenkins) setCrumb(req *http.Request) {
+	crumbData := map[string]string{}
+
+	err, cookie := jenkins.doGet("/crumbIssuer/api/json", nil, &crumbData, true)
+
+	if err != nil {
+		return
+	}
+	req.Header.Set(crumbData["crumbRequestField"], crumbData["crumb"])
+	req.Header.Set("Cookie", cookie)
 }
 
 // postAndGetLocation performs a POST request and extracts the queue ID from Location header
@@ -219,6 +243,8 @@ func (jenkins *Jenkins) postAndGetLocation(path string, params url.Values) (int,
 	if err != nil {
 		return 0, err
 	}
+
+	jenkins.setCrumb(req)
 
 	resp, err := jenkins.sendRequest(req)
 	if err != nil {
