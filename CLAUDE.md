@@ -9,12 +9,13 @@ drone-jenkins is a Drone CI plugin (and standalone CLI tool) for triggering Jenk
 ## Build Commands
 
 ```sh
-make build       # Build binary to bin/drone-jenkins
-make test        # Run tests with coverage
-make lint        # Run golangci-lint
-make fmt         # Format code with golangci-lint
-make docker      # Build Docker image
-make clean       # Clean build artifacts
+make build         # Build binary to bin/drone-jenkins
+make test          # Run tests with coverage
+make lint          # Run golangci-lint
+make fmt           # Format code with golangci-lint
+make docker        # Build Docker image
+make clean         # Clean build artifacts
+make help          # Show all available targets
 ```
 
 To run a single test:
