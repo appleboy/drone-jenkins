@@ -1,5 +1,7 @@
 # drone-jenkins
 
+[English](README.md) | [繁體中文](README.zh-TW.md) | [简体中文](README.zh-CN.md)
+
 ![logo](./images/logo.png)
 
 [![Lint and Testing](https://github.com/appleboy/drone-jenkins/actions/workflows/lint.yml/badge.svg)](https://github.com/appleboy/drone-jenkins/actions/workflows/lint.yml)
@@ -10,9 +12,30 @@
 
 A [Drone](https://github.com/drone/drone) plugin for triggering [Jenkins](https://jenkins.io/) jobs with flexible authentication and parameter support.
 
+## Why drone-jenkins?
+
+In modern enterprise environments, teams often adopt different CI/CD platforms based on their specific needs, project requirements, or historical decisions. It's common to find:
+
+- **Multiple CI platforms coexisting**: Some teams use Jenkins for its extensive plugin ecosystem, while others prefer Drone for its simplicity and container-native approach.
+- **Legacy systems integration**: Organizations with established Jenkins pipelines need to integrate with newer CI/CD workflows without rewriting everything.
+- **Cross-team collaboration**: Different departments may standardize on different tools, requiring seamless communication between platforms.
+
+**drone-jenkins** bridges this gap by allowing CI/CD pipelines to trigger Jenkins jobs as part of their workflow. While originally designed for Drone CI, it works seamlessly with **GitHub Actions**, **GitLab CI**, and any CI platform that supports Docker containers or shell commands.
+
+This enables:
+
+- **Unified deployment pipelines**: Trigger existing Jenkins deployment jobs from any CI platform without migration
+- **Gradual migration**: Teams can incrementally move to modern CI platforms while still leveraging Jenkins jobs
+- **Best of both worlds**: Use GitHub Actions or Drone for modern containerized builds and Jenkins for specialized tasks with specific plugins
+- **Centralized orchestration**: Coordinate builds across multiple CI systems from a single pipeline
+- **Flexibility**: Available as a CLI binary, Docker image, or native plugin—use it however fits your workflow
+
+Whether you're managing a hybrid CI/CD environment or orchestrating complex multi-platform deployments, drone-jenkins provides the connectivity you need.
+
 ## Table of Contents
 
 - [drone-jenkins](#drone-jenkins)
+  - [Why drone-jenkins?](#why-drone-jenkins)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Prerequisites](#prerequisites)
@@ -118,19 +141,19 @@ Alternatively, you can use a remote trigger token configured in your Jenkins job
 
 ### Parameters Reference
 
-| Parameter     | CLI Flag             | Environment Variable                            | Required      | Description                                                       |
-| ------------- | -------------------- | ----------------------------------------------- | ------------- | ----------------------------------------------------------------- |
-| Host          | `--host`             | `PLUGIN_URL`, `JENKINS_URL`                     | Yes           | Jenkins base URL (e.g., `http://jenkins.example.com/`)            |
-| User          | `--user`, `-u`       | `PLUGIN_USER`, `JENKINS_USER`                   | Conditional\* | Jenkins username                                                  |
-| Token         | `--token`, `-t`      | `PLUGIN_TOKEN`, `JENKINS_TOKEN`                 | Conditional\* | Jenkins API token                                                 |
-| Remote Token  | `--remote-token`     | `PLUGIN_REMOTE_TOKEN`, `JENKINS_REMOTE_TOKEN`   | Conditional\* | Jenkins remote trigger token                                      |
-| Job           | `--job`, `-j`        | `PLUGIN_JOB`, `JENKINS_JOB`                     | Yes           | Jenkins job name(s) - can specify multiple                        |
-| Parameters    | `--parameters`, `-p` | `PLUGIN_PARAMETERS`, `JENKINS_PARAMETERS`       | No            | Build parameters in multi-line `key=value` format (one per line)  |
-| Insecure      | `--insecure`         | `PLUGIN_INSECURE`, `JENKINS_INSECURE`           | No            | Allow insecure SSL connections (default: false)                   |
-| CA Cert       | `--ca-cert`          | `PLUGIN_CA_CERT`, `JENKINS_CA_CERT`             | No            | Custom CA certificate (PEM content, file path, or HTTP URL)       |
-| Wait          | `--wait`             | `PLUGIN_WAIT`, `JENKINS_WAIT`                   | No            | Wait for job completion (default: false)                          |
-| Poll Interval | `--poll-interval`    | `PLUGIN_POLL_INTERVAL`, `JENKINS_POLL_INTERVAL` | No            | Interval between status checks (default: 10s)                     |
-| Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m)            |
+| Parameter     | CLI Flag             | Environment Variable                            | Required      | Description                                                               |
+| ------------- | -------------------- | ----------------------------------------------- | ------------- | ------------------------------------------------------------------------- |
+| Host          | `--host`             | `PLUGIN_URL`, `JENKINS_URL`                     | Yes           | Jenkins base URL (e.g., `http://jenkins.example.com/`)                    |
+| User          | `--user`, `-u`       | `PLUGIN_USER`, `JENKINS_USER`                   | Conditional\* | Jenkins username                                                          |
+| Token         | `--token`, `-t`      | `PLUGIN_TOKEN`, `JENKINS_TOKEN`                 | Conditional\* | Jenkins API token                                                         |
+| Remote Token  | `--remote-token`     | `PLUGIN_REMOTE_TOKEN`, `JENKINS_REMOTE_TOKEN`   | Conditional\* | Jenkins remote trigger token                                              |
+| Job           | `--job`, `-j`        | `PLUGIN_JOB`, `JENKINS_JOB`                     | Yes           | Jenkins job name(s) - can specify multiple                                |
+| Parameters    | `--parameters`, `-p` | `PLUGIN_PARAMETERS`, `JENKINS_PARAMETERS`       | No            | Build parameters in multi-line `key=value` format (one per line)          |
+| Insecure      | `--insecure`         | `PLUGIN_INSECURE`, `JENKINS_INSECURE`           | No            | Allow insecure SSL connections (default: false)                           |
+| CA Cert       | `--ca-cert`          | `PLUGIN_CA_CERT`, `JENKINS_CA_CERT`             | No            | Custom CA certificate (PEM content, file path, or HTTP URL)               |
+| Wait          | `--wait`             | `PLUGIN_WAIT`, `JENKINS_WAIT`                   | No            | Wait for job completion (default: false)                                  |
+| Poll Interval | `--poll-interval`    | `PLUGIN_POLL_INTERVAL`, `JENKINS_POLL_INTERVAL` | No            | Interval between status checks (default: 10s)                             |
+| Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m)                    |
 | Debug         | `--debug`            | `PLUGIN_DEBUG`, `JENKINS_DEBUG`                 | No            | Enable debug mode to show detailed parameter information (default: false) |
 
 **Authentication Requirements**: You must provide either:
