@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -214,7 +215,7 @@ func TestParseParameters(t *testing.T) {
 func TestExecMissingConfig(t *testing.T) {
 	var plugin Plugin
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
@@ -227,7 +228,7 @@ func TestExecMissingJenkinsUsername(t *testing.T) {
 		BaseURL: "http://example.com",
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
@@ -241,7 +242,7 @@ func TestExecMissingJenkinsToken(t *testing.T) {
 		Username: "foo",
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
@@ -277,7 +278,7 @@ func TestExecMissingJenkinsJob(t *testing.T) {
 				Job:      tt.jobs,
 			}
 
-			err := plugin.Exec()
+			err := plugin.Exec(context.Background())
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "at least one Jenkins job name is required")
 		})
@@ -303,7 +304,7 @@ func TestExecTriggerBuild(t *testing.T) {
 		Job:      []string{"drone-jenkins"},
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
 }
@@ -327,7 +328,7 @@ func TestExecTriggerMultipleJobs(t *testing.T) {
 		Job:      []string{"job1", "job2", "job3"},
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
 	assert.Equal(t, 3, jobsTriggered)
@@ -352,7 +353,7 @@ func TestExecWithParameters(t *testing.T) {
 		Parameters: "branch=main\nenvironment=production",
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
 	assert.Equal(t, "main", receivedQuery.Get("branch"))
@@ -378,7 +379,7 @@ func TestExecWithRemoteToken(t *testing.T) {
 		Job:         []string{"secure-job"},
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
 	assert.Equal(t, "remote-token-123", receivedToken)
@@ -403,7 +404,7 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 		Job:      []string{"  job1  ", "job2", "   ", "job3"},
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
 	// Should trigger 3 jobs (whitespace-only entry should be filtered out)
@@ -439,7 +440,7 @@ func TestExecWithWaitSuccess(t *testing.T) {
 		Wait:     true,
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
 }
@@ -473,7 +474,7 @@ func TestExecWithWaitFailure(t *testing.T) {
 		Wait:     true,
 	}
 
-	err := plugin.Exec()
+	err := plugin.Exec(context.Background())
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed with status: FAILURE")

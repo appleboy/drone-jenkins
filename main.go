@@ -236,5 +236,5 @@ func run(c *cli.Context) error {
 		log.Println("========================================")
 	}
 
-	return plugin.Exec()
+	return plugin.Exec(c.Context)
 }

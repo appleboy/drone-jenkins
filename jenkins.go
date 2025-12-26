@@ -62,7 +62,7 @@ type (
 // - PEM content (if it starts with "-----BEGIN")
 // - File path (if the file exists)
 // - HTTP/HTTPS URL (if it starts with "http://" or "https://")
-func loadCACert(caCert string) ([]byte, error) {
+func loadCACert(ctx context.Context, caCert string) ([]byte, error) {
 	if caCert == "" {
 		return nil, nil
 	}
@@ -74,7 +74,7 @@ func loadCACert(caCert string) ([]byte, error) {
 
 	// Check if it's an HTTP/HTTPS URL
 	if strings.HasPrefix(caCert, "http://") || strings.HasPrefix(caCert, "https://") {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, caCert, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, caCert, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create request for CA certificate URL: %w", err)
 		}
@@ -105,6 +105,7 @@ func loadCACert(caCert string) ([]byte, error) {
 
 // NewJenkins is initial Jenkins object
 func NewJenkins(
+	ctx context.Context,
 	auth *Auth,
 	baseURL string,
 	token string,
@@ -115,7 +116,7 @@ func NewJenkins(
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	// Load CA certificate if provided
-	caCertData, err := loadCACert(caCert)
+	caCertData, err := loadCACert(ctx, caCert)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load CA certificate: %w", err)
 	}
@@ -181,10 +182,15 @@ func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
 	return jenkins.Client.Do(req)
 }
 
-func (jenkins *Jenkins) get(path string, params url.Values, body interface{}) error {
+func (jenkins *Jenkins) get(
+	ctx context.Context,
+	path string,
+	params url.Values,
+	body interface{},
+) error {
 	requestURL := jenkins.buildURL(path, params)
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET", requestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return err
 	}
@@ -212,10 +218,14 @@ func (jenkins *Jenkins) get(path string, params url.Values, body interface{}) er
 }
 
 // postAndGetLocation performs a POST request and extracts the queue ID from Location header
-func (jenkins *Jenkins) postAndGetLocation(path string, params url.Values) (int, error) {
+func (jenkins *Jenkins) postAndGetLocation(
+	ctx context.Context,
+	path string,
+	params url.Values,
+) (int, error) {
 	requestURL := jenkins.buildURL(path, params)
 
-	req, err := http.NewRequestWithContext(context.Background(), "POST", requestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "POST", requestURL, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -284,11 +294,11 @@ func (jenkins *Jenkins) parseJobPath(job string) string {
 }
 
 // getQueueItem fetches information about a queue item
-func (jenkins *Jenkins) getQueueItem(queueID int) (*QueueItem, error) {
+func (jenkins *Jenkins) getQueueItem(ctx context.Context, queueID int) (*QueueItem, error) {
 	path := fmt.Sprintf("/queue/item/%d/api/json", queueID)
 
 	var queueItem QueueItem
-	err := jenkins.get(path, nil, &queueItem)
+	err := jenkins.get(ctx, path, nil, &queueItem)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get queue item %d: %w", queueID, err)
 	}
@@ -297,11 +307,15 @@ func (jenkins *Jenkins) getQueueItem(queueID int) (*QueueItem, error) {
 }
 
 // getBuildInfo fetches information about a specific build
-func (jenkins *Jenkins) getBuildInfo(job string, buildNumber int) (*BuildInfo, error) {
+func (jenkins *Jenkins) getBuildInfo(
+	ctx context.Context,
+	job string,
+	buildNumber int,
+) (*BuildInfo, error) {
 	path := fmt.Sprintf("%s/%d/api/json", jenkins.parseJobPath(job), buildNumber)
 
 	var buildInfo BuildInfo
-	err := jenkins.get(path, nil, &buildInfo)
+	err := jenkins.get(ctx, path, nil, &buildInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get build info for %s #%d: %w", job, buildNumber, err)
 	}
@@ -312,6 +326,7 @@ func (jenkins *Jenkins) getBuildInfo(job string, buildNumber int) (*BuildInfo, e
 // waitForCompletion waits for a Jenkins build to complete
 // It first polls the queue to get the build number, then polls the build status until completion
 func (jenkins *Jenkins) waitForCompletion(
+	ctx context.Context,
 	job string,
 	queueID int,
 	pollInterval, timeout time.Duration,
@@ -327,7 +342,7 @@ func (jenkins *Jenkins) waitForCompletion(
 			return nil, fmt.Errorf("timeout waiting for job %s to start", job)
 		}
 
-		queueItem, err := jenkins.getQueueItem(queueID)
+		queueItem, err := jenkins.getQueueItem(ctx, queueID)
 		if err != nil {
 			// Queue item might be deleted after build starts, try to continue
 			log.Printf("warning: failed to get queue item: %v", err)
@@ -362,7 +377,7 @@ func (jenkins *Jenkins) waitForCompletion(
 			)
 		}
 
-		buildInfo, err := jenkins.getBuildInfo(job, buildNumber)
+		buildInfo, err := jenkins.getBuildInfo(ctx, job, buildNumber)
 		if err != nil {
 			log.Printf("warning: failed to get build info: %v", err)
 			time.Sleep(pollInterval)
@@ -402,7 +417,7 @@ func (jenkins *Jenkins) waitForCompletion(
 	}
 }
 
-func (jenkins *Jenkins) trigger(job string, params url.Values) (int, error) {
+func (jenkins *Jenkins) trigger(ctx context.Context, job string, params url.Values) (int, error) {
 	// Add remote trigger token to params
 	if jenkins.Token != "" {
 		if params == nil {
@@ -465,5 +480,5 @@ func (jenkins *Jenkins) trigger(job string, params url.Values) (int, error) {
 
 	// All params (including token) are passed as query parameters
 	// Returns the queue item ID for tracking
-	return jenkins.postAndGetLocation(urlPath, params)
+	return jenkins.postAndGetLocation(ctx, urlPath, params)
 }

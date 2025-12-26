@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -99,7 +100,8 @@ func (p Plugin) validateConfig() error {
 // Exec executes the plugin by triggering the configured Jenkins jobs.
 // It validates the configuration, parses parameters, and triggers each job sequentially.
 // Returns an error if validation fails or any job trigger fails.
-func (p Plugin) Exec() error {
+// The context can be used to cancel operations mid-execution.
+func (p Plugin) Exec(ctx context.Context) error {
 	// Validate required configuration
 	if err := p.validateConfig(); err != nil {
 		return fmt.Errorf("configuration error: %w", err)
@@ -118,7 +120,7 @@ func (p Plugin) Exec() error {
 	}
 
 	// Initialize Jenkins client
-	jenkins, err := NewJenkins(auth, p.BaseURL, p.RemoteToken, p.Insecure, p.CACert, p.Debug)
+	jenkins, err := NewJenkins(ctx, auth, p.BaseURL, p.RemoteToken, p.Insecure, p.CACert, p.Debug)
 	if err != nil {
 		return fmt.Errorf("failed to initialize Jenkins client: %w", err)
 	}
@@ -139,7 +141,7 @@ func (p Plugin) Exec() error {
 
 	// Trigger each job
 	for _, jobName := range jobs {
-		queueID, err := jenkins.trigger(jobName, params)
+		queueID, err := jenkins.trigger(ctx, jobName, params)
 		if err != nil {
 			return fmt.Errorf("failed to trigger job %q: %w", jobName, err)
 		}
@@ -147,7 +149,13 @@ func (p Plugin) Exec() error {
 
 		// Wait for job completion if requested
 		if p.Wait {
-			buildInfo, err := jenkins.waitForCompletion(jobName, queueID, pollInterval, timeout)
+			buildInfo, err := jenkins.waitForCompletion(
+				ctx,
+				jobName,
+				queueID,
+				pollInterval,
+				timeout,
+			)
 			if err != nil {
 				return fmt.Errorf("error waiting for job %q: %w", jobName, err)
 			}
