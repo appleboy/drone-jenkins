@@ -10,25 +10,25 @@
 [![codecov](https://codecov.io/gh/appleboy/drone-jenkins/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-jenkins)
 [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/drone-jenkins)](https://goreportcard.com/report/github.com/appleboy/drone-jenkins)
 
-A [Drone](https://github.com/drone/drone) plugin for triggering [Jenkins](https://jenkins.io/) jobs with flexible authentication and parameter support.
+A CLI tool and CI/CD plugin for triggering [Jenkins](https://jenkins.io/) jobs. Works with [GitHub Actions](https://github.com/features/actions), [GitLab CI](https://docs.gitlab.com/ee/ci/), [Gitea Action](https://docs.gitea.com/usage/actions/overview), and any platform that supports Docker containers or shell commands.
 
 ## Why drone-jenkins?
 
 In modern enterprise environments, teams often adopt different CI/CD platforms based on their specific needs, project requirements, or historical decisions. It's common to find:
 
-- **Multiple CI platforms coexisting**: Some teams use Jenkins for its extensive plugin ecosystem, while others prefer Drone for its simplicity and container-native approach.
+- **Multiple CI platforms coexisting**: Some teams use Jenkins for its extensive plugin ecosystem, while others prefer GitHub Actions or GitLab CI for their simplicity and container-native approach.
 - **Legacy systems integration**: Organizations with established Jenkins pipelines need to integrate with newer CI/CD workflows without rewriting everything.
 - **Cross-team collaboration**: Different departments may standardize on different tools, requiring seamless communication between platforms.
 
-**drone-jenkins** bridges this gap by allowing CI/CD pipelines to trigger Jenkins jobs as part of their workflow. While originally designed for Drone CI, it works seamlessly with **GitHub Actions**, **GitLab CI**, and any CI platform that supports Docker containers or shell commands.
+**drone-jenkins** bridges this gap by allowing CI/CD pipelines to trigger Jenkins jobs as part of their workflow. It works seamlessly with **GitHub Actions**, **GitLab CI**, **Gitea Action**, and any CI platform that supports Docker containers or shell commands.
 
 This enables:
 
 - **Unified deployment pipelines**: Trigger existing Jenkins deployment jobs from any CI platform without migration
 - **Gradual migration**: Teams can incrementally move to modern CI platforms while still leveraging Jenkins jobs
-- **Best of both worlds**: Use GitHub Actions or Drone for modern containerized builds and Jenkins for specialized tasks with specific plugins
+- **Best of both worlds**: Use GitHub Actions or GitLab CI for modern containerized builds and Jenkins for specialized tasks with specific plugins
 - **Centralized orchestration**: Coordinate builds across multiple CI systems from a single pipeline
-- **Flexibility**: Available as a CLI binary, Docker image, or native plugin—use it however fits your workflow
+- **Flexibility**: Available as a CLI binary or Docker image—use it however fits your workflow
 
 Whether you're managing a hybrid CI/CD environment or orchestrating complex multi-platform deployments, drone-jenkins provides the connectivity you need.
 
@@ -50,7 +50,6 @@ Whether you're managing a hybrid CI/CD environment or orchestrating complex mult
   - [Usage](#usage)
     - [Command Line](#command-line)
     - [Docker](#docker)
-    - [Drone CI](#drone-ci)
   - [Development](#development)
     - [Building](#building)
     - [Testing](#testing)
@@ -66,7 +65,7 @@ Whether you're managing a hybrid CI/CD environment or orchestrating complex mult
 - Debug mode with detailed parameter information and secure token masking
 - SSL/TLS support with custom CA certificates (PEM content, file path, or URL)
 - Cross-platform support (Linux, macOS, Windows)
-- Available as binary, Docker image, or Drone plugin
+- Available as CLI binary or Docker image
 
 ## Prerequisites
 
@@ -357,107 +356,6 @@ docker run --rm \
   -e JENKINS_JOB=my-jenkins-job \
   -e JENKINS_CA_CERT=https://example.com/ca-bundle.crt \
   ghcr.io/appleboy/drone-jenkins
-```
-
-### Drone CI
-
-Add the plugin to your `.drone.yml`:
-
-```yaml
-kind: pipeline
-name: default
-
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: drone-jenkins-plugin
-```
-
-**Multiple jobs with parameters:**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job:
-        - deploy-frontend
-        - deploy-backend
-      parameters: |
-        ENVIRONMENT=production
-        VERSION=${DRONE_TAG}
-        COMMIT_SHA=${DRONE_COMMIT_SHA}
-        BRANCH=${DRONE_BRANCH}
-```
-
-**Using remote token:**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      remote_token:
-        from_secret: jenkins_remote_token
-      job: my-jenkins-job
-```
-
-**Wait for job completion:**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: deploy-production
-      wait: true
-      poll_interval: 15s
-      timeout: 1h
-```
-
-**With debug mode:**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: my-jenkins-job
-      debug: true
-```
-
-**With custom CA certificate:**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: https://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: my-jenkins-job
-      ca_cert:
-        from_secret: jenkins_ca_cert
 ```
 
 For more detailed examples and advanced configurations, see [DOCS.md](DOCS.md).

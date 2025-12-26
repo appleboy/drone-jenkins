@@ -10,25 +10,25 @@
 [![codecov](https://codecov.io/gh/appleboy/drone-jenkins/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-jenkins)
 [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/drone-jenkins)](https://goreportcard.com/report/github.com/appleboy/drone-jenkins)
 
-一個用於觸發 [Jenkins](https://jenkins.io/) 任務的 [Drone](https://github.com/drone/drone) 外掛，支援彈性的認證方式與參數傳遞。
+一個用於觸發 [Jenkins](https://jenkins.io/) 任務的 CLI 工具與 CI/CD 外掛。支援 [GitHub Actions](https://github.com/features/actions)、[GitLab CI](https://docs.gitlab.com/ee/ci/)、[Gitea Action](https://docs.gitea.com/usage/actions/overview) 以及任何支援 Docker 容器或 Shell 命令的平台。
 
 ## 為什麼選擇 drone-jenkins？
 
 在現代企業環境中，團隊經常根據特定需求、專案要求或歷史決策採用不同的 CI/CD 平台。常見的情況包括：
 
-- **多個 CI 平台並存**：有些團隊因為 Jenkins 豐富的外掛生態系統而使用它，而其他團隊則偏好 Drone 的簡潔性和容器原生方式。
+- **多個 CI 平台並存**：有些團隊因為 Jenkins 豐富的外掛生態系統而使用它，而其他團隊則偏好 GitHub Actions 或 GitLab CI 的簡潔性和容器原生方式。
 - **舊有系統整合**：擁有既有 Jenkins 流水線的組織需要與新的 CI/CD 工作流程整合，而不需要重寫所有內容。
 - **跨團隊協作**：不同部門可能標準化使用不同的工具，需要平台之間的無縫溝通。
 
-**drone-jenkins** 彌補了這個差距，讓 CI/CD 流水線能夠將觸發 Jenkins 任務作為工作流程的一部分。雖然最初是為 Drone CI 設計的，但它可以與 **GitHub Actions**、**GitLab CI** 以及任何支援 Docker 容器或 Shell 命令的 CI 平台無縫協作。
+**drone-jenkins** 彌補了這個差距，讓 CI/CD 流水線能夠將觸發 Jenkins 任務作為工作流程的一部分。它可以與 **GitHub Actions**、**GitLab CI**、**Gitea Action** 以及任何支援 Docker 容器或 Shell 命令的 CI 平台無縫協作。
 
 這使得以下情境成為可能：
 
 - **統一的部署流水線**：從任何 CI 平台觸發現有的 Jenkins 部署任務，無需遷移
 - **漸進式遷移**：團隊可以逐步遷移到現代 CI 平台，同時繼續使用 Jenkins 任務
-- **兩全其美**：使用 GitHub Actions 或 Drone 進行現代容器化建置，並使用 Jenkins 處理需要特定外掛的專門任務
+- **兩全其美**：使用 GitHub Actions 或 GitLab CI 進行現代容器化建置，並使用 Jenkins 處理需要特定外掛的專門任務
 - **集中式協調**：從單一流水線協調跨多個 CI 系統的建置
-- **彈性使用**：提供 CLI 執行檔、Docker 映像檔或原生外掛——依照您的工作流程選擇使用方式
+- **彈性使用**：提供 CLI 執行檔或 Docker 映像檔——依照您的工作流程選擇使用方式
 
 無論您是在管理混合 CI/CD 環境還是協調複雜的多平台部署，drone-jenkins 都能提供您所需的連接能力。
 
@@ -50,7 +50,6 @@
   - [使用方式](#使用方式)
     - [命令列](#命令列)
     - [Docker](#docker)
-    - [Drone CI](#drone-ci)
   - [開發](#開發)
     - [建置](#建置)
     - [測試](#測試)
@@ -66,7 +65,7 @@
 - 除錯模式，顯示詳細參數資訊並安全遮蔽令牌
 - SSL/TLS 支援，可使用自訂 CA 憑證（PEM 內容、檔案路徑或 URL）
 - 跨平台支援（Linux、macOS、Windows）
-- 提供執行檔、Docker 映像檔或 Drone 外掛形式
+- 提供 CLI 執行檔或 Docker 映像檔
 
 ## 先決條件
 
@@ -357,107 +356,6 @@ docker run --rm \
   -e JENKINS_JOB=my-jenkins-job \
   -e JENKINS_CA_CERT=https://example.com/ca-bundle.crt \
   ghcr.io/appleboy/drone-jenkins
-```
-
-### Drone CI
-
-將外掛加入您的 `.drone.yml`：
-
-```yaml
-kind: pipeline
-name: default
-
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: drone-jenkins-plugin
-```
-
-**多個任務帶參數：**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job:
-        - deploy-frontend
-        - deploy-backend
-      parameters: |
-        ENVIRONMENT=production
-        VERSION=${DRONE_TAG}
-        COMMIT_SHA=${DRONE_COMMIT_SHA}
-        BRANCH=${DRONE_BRANCH}
-```
-
-**使用遠端令牌：**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      remote_token:
-        from_secret: jenkins_remote_token
-      job: my-jenkins-job
-```
-
-**等待任務完成：**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: deploy-production
-      wait: true
-      poll_interval: 15s
-      timeout: 1h
-```
-
-**使用除錯模式：**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: http://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: my-jenkins-job
-      debug: true
-```
-
-**使用自訂 CA 憑證：**
-
-```yaml
-steps:
-  - name: trigger-jenkins
-    image: ghcr.io/appleboy/drone-jenkins
-    settings:
-      url: https://jenkins.example.com/
-      user: appleboy
-      token:
-        from_secret: jenkins_token
-      job: my-jenkins-job
-      ca_cert:
-        from_secret: jenkins_ca_cert
 ```
 
 更多詳細範例和進階設定，請參閱 [DOCS.md](DOCS.md)。
