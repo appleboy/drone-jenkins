@@ -32,28 +32,55 @@ func TestValidateConfig(t *testing.T) {
 			errorMsg:  "jenkins base URL is required",
 		},
 		{
-			name: "missing username and token",
+			name: "missing authentication",
 			plugin: Plugin{
 				BaseURL: "http://example.com",
 			},
 			wantError: true,
-			errorMsg:  "jenkins username is required",
+			errorMsg:  "authentication required",
 		},
 		{
-			name: "missing token",
+			name: "missing token (only username)",
 			plugin: Plugin{
 				BaseURL:  "http://example.com",
 				Username: "foo",
 			},
 			wantError: true,
-			errorMsg:  "jenkins API token is required",
+			errorMsg:  "authentication required",
 		},
 		{
-			name: "all required config present",
+			name: "missing username (only token)",
+			plugin: Plugin{
+				BaseURL: "http://example.com",
+				Token:   "bar",
+			},
+			wantError: true,
+			errorMsg:  "authentication required",
+		},
+		{
+			name: "user and token auth",
 			plugin: Plugin{
 				BaseURL:  "http://example.com",
 				Username: "foo",
 				Token:    "bar",
+			},
+			wantError: false,
+		},
+		{
+			name: "remote token auth",
+			plugin: Plugin{
+				BaseURL:     "http://example.com",
+				RemoteToken: "remote-token-123",
+			},
+			wantError: false,
+		},
+		{
+			name: "both auth methods",
+			plugin: Plugin{
+				BaseURL:     "http://example.com",
+				Username:    "foo",
+				Token:       "bar",
+				RemoteToken: "remote-token-123",
 			},
 			wantError: false,
 		},
@@ -232,7 +259,7 @@ func TestExecMissingJenkinsUsername(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
-	assert.Contains(t, err.Error(), "jenkins username is required")
+	assert.Contains(t, err.Error(), "authentication required")
 }
 
 // TestExecMissingJenkinsToken tests Exec with missing token
@@ -246,7 +273,7 @@ func TestExecMissingJenkinsToken(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
-	assert.Contains(t, err.Error(), "jenkins API token is required")
+	assert.Contains(t, err.Error(), "authentication required")
 }
 
 // TestExecMissingJenkinsJob tests Exec with missing or empty job list

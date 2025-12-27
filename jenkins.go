@@ -224,7 +224,7 @@ func (jenkins *Jenkins) sendRequest(
 	req *http.Request,
 	crumb *CrumbResponse,
 ) (*http.Response, error) {
-	if jenkins.Auth != nil {
+	if jenkins.Auth != nil && jenkins.Auth.Username != "" && jenkins.Auth.Token != "" {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
 
@@ -277,10 +277,14 @@ func (jenkins *Jenkins) postAndGetLocation(
 	path string,
 	params url.Values,
 ) (int, error) {
-	// Fetch CSRF crumb before POST request
-	crumb, err := jenkins.getCrumb(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get crumb: %w", err)
+	// Fetch CSRF crumb before POST request (only if authenticated)
+	var crumb *CrumbResponse
+	if jenkins.Auth != nil && jenkins.Auth.Username != "" && jenkins.Auth.Token != "" {
+		var err error
+		crumb, err = jenkins.getCrumb(ctx)
+		if err != nil {
+			return 0, fmt.Errorf("failed to get crumb: %w", err)
+		}
 	}
 
 	requestURL := jenkins.buildURL(path, params)
