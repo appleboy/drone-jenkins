@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"strings"
@@ -31,7 +32,14 @@ type (
 		BaseURL string
 		Token   string // Remote trigger token
 		Client  *http.Client
-		Debug   bool // Enable debug mode to show detailed information
+		Debug   bool           // Enable debug mode to show detailed information
+		crumb   *CrumbResponse // Cached CSRF crumb
+	}
+
+	// CrumbResponse represents Jenkins crumb issuer response for CSRF protection
+	CrumbResponse struct {
+		Crumb             string `json:"crumb"`
+		CrumbRequestField string `json:"crumbRequestField"`
 	}
 
 	// QueueItem represents a Jenkins queue item response
@@ -144,14 +152,21 @@ func NewJenkins(
 		}
 	}
 
-	// Create HTTP client
-	client := http.DefaultClient
-	if tlsConfig != nil {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: tlsConfig,
-			},
-		}
+	// Create CookieJar for session management (required for CSRF crumb)
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cookie jar: %w", err)
+	}
+
+	// Create HTTP Transport with optional TLS configuration
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+
+	// Create HTTP client with CookieJar and Transport
+	client := &http.Client{
+		Jar:       jar,
+		Transport: transport,
 	}
 
 	return &Jenkins{
@@ -175,10 +190,49 @@ func (jenkins *Jenkins) buildURL(path string, params url.Values) (requestURL str
 	return
 }
 
-func (jenkins *Jenkins) sendRequest(req *http.Request) (*http.Response, error) {
+// getCrumb fetches CSRF crumb from Jenkins
+// Returns nil if CSRF protection is disabled on Jenkins
+//
+//nolint:unparam // Error return kept for future extensibility and API consistency
+func (jenkins *Jenkins) getCrumb(ctx context.Context) (*CrumbResponse, error) {
+	// Return cached crumb if available
+	if jenkins.crumb != nil {
+		return jenkins.crumb, nil
+	}
+
+	path := "/crumbIssuer/api/json"
+	var crumb CrumbResponse
+	err := jenkins.get(ctx, path, nil, &crumb)
+	if err != nil {
+		// CSRF protection might be disabled, log and continue
+		if jenkins.Debug {
+			log.Printf("crumb not available (CSRF may be disabled): %v", err)
+		}
+		return nil, nil
+	}
+
+	// Cache the crumb for subsequent requests
+	jenkins.crumb = &crumb
+	if jenkins.Debug {
+		log.Printf("obtained crumb: %s=%s", crumb.CrumbRequestField, crumb.Crumb)
+	}
+
+	return jenkins.crumb, nil
+}
+
+func (jenkins *Jenkins) sendRequest(
+	req *http.Request,
+	crumb *CrumbResponse,
+) (*http.Response, error) {
 	if jenkins.Auth != nil {
 		req.SetBasicAuth(jenkins.Auth.Username, jenkins.Auth.Token)
 	}
+
+	// Add CSRF crumb header if available
+	if crumb != nil && crumb.CrumbRequestField != "" {
+		req.Header.Set(crumb.CrumbRequestField, crumb.Crumb)
+	}
+
 	return jenkins.Client.Do(req)
 }
 
@@ -195,7 +249,7 @@ func (jenkins *Jenkins) get(
 		return err
 	}
 
-	resp, err := jenkins.sendRequest(req)
+	resp, err := jenkins.sendRequest(req, nil) // GET requests don't need crumb
 	if err != nil {
 		return err
 	}
@@ -223,6 +277,12 @@ func (jenkins *Jenkins) postAndGetLocation(
 	path string,
 	params url.Values,
 ) (int, error) {
+	// Fetch CSRF crumb before POST request
+	crumb, err := jenkins.getCrumb(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get crumb: %w", err)
+	}
+
 	requestURL := jenkins.buildURL(path, params)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", requestURL, nil)
@@ -230,7 +290,7 @@ func (jenkins *Jenkins) postAndGetLocation(
 		return 0, err
 	}
 
-	resp, err := jenkins.sendRequest(req)
+	resp, err := jenkins.sendRequest(req, crumb)
 	if err != nil {
 		return 0, err
 	}

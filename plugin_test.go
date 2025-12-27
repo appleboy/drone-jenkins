@@ -314,7 +314,10 @@ func TestExecTriggerMultipleJobs(t *testing.T) {
 	// Create a mock Jenkins server
 	jobsTriggered := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		jobsTriggered++
+		// Only count POST requests (job triggers), not GET requests (crumb)
+		if r.Method == "POST" {
+			jobsTriggered++
+		}
 		w.Header().
 			Set("Location", fmt.Sprintf("http://jenkins.example.com/queue/item/%d/", jobsTriggered))
 		w.WriteHeader(http.StatusCreated)
@@ -390,7 +393,10 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 	// Create a mock Jenkins server
 	jobsTriggered := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		jobsTriggered++
+		// Only count POST requests (job triggers), not GET requests (crumb)
+		if r.Method == "POST" {
+			jobsTriggered++
+		}
 		w.Header().
 			Set("Location", fmt.Sprintf("http://jenkins.example.com/queue/item/%d/", jobsTriggered))
 		w.WriteHeader(http.StatusCreated)
