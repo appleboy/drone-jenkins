@@ -88,12 +88,15 @@ func (p Plugin) validateConfig() error {
 	if p.BaseURL == "" {
 		return errors.New("jenkins base URL is required")
 	}
-	if p.Username == "" {
-		return errors.New("jenkins username is required")
+
+	// Validate authentication: either (user + token) or remote-token must be provided
+	hasUserAuth := p.Username != "" && p.Token != ""
+	hasRemoteToken := p.RemoteToken != ""
+
+	if !hasUserAuth && !hasRemoteToken {
+		return errors.New("authentication required")
 	}
-	if p.Token == "" {
-		return errors.New("jenkins API token is required")
-	}
+
 	return nil
 }
 
@@ -113,10 +116,13 @@ func (p Plugin) Exec(ctx context.Context) error {
 		return errors.New("at least one Jenkins job name is required")
 	}
 
-	// Set up authentication
-	auth := &Auth{
-		Username: p.Username,
-		Token:    p.Token,
+	// Set up authentication (only if username and token are provided)
+	var auth *Auth
+	if p.Username != "" && p.Token != "" {
+		auth = &Auth{
+			Username: p.Username,
+			Token:    p.Token,
+		}
 	}
 
 	// Initialize Jenkins client
