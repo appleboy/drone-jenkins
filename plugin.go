@@ -94,7 +94,7 @@ func (p Plugin) validateConfig() error {
 	hasRemoteToken := p.RemoteToken != ""
 
 	if !hasUserAuth && !hasRemoteToken {
-		return errors.New("authentication required: provide either (user + token) or remote-token")
+		return errors.New("authentication required")
 	}
 
 	return nil
