@@ -46,10 +46,16 @@ Whether you're managing a hybrid CI/CD environment or orchestrating complex mult
   - [Configuration](#configuration)
     - [Jenkins Server Setup](#jenkins-server-setup)
     - [Authentication](#authentication)
+      - [Understanding Jenkins Authentication](#understanding-jenkins-authentication)
+      - [CSRF Protection Notice](#csrf-protection-notice)
     - [Parameters Reference](#parameters-reference)
   - [Usage](#usage)
     - [Command Line](#command-line)
     - [Docker](#docker)
+  - [Troubleshooting](#troubleshooting)
+    - [Error: 403 No valid crumb was included in the request](#error-403-no-valid-crumb-was-included-in-the-request)
+    - [Error: 401 Unauthorized](#error-401-unauthorized)
+    - [Remote Token Not Working](#remote-token-not-working)
   - [Development](#development)
     - [Building](#building)
     - [Testing](#testing)
@@ -125,7 +131,20 @@ docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --re
 
 ### Authentication
 
-Jenkins API tokens are recommended for authentication. To create an API token:
+#### Understanding Jenkins Authentication
+
+Jenkins supports multiple authentication methods for triggering builds. This tool supports two approaches:
+
+**1. API Token Authentication (Recommended)**
+
+Use Jenkins user credentials with an API token. This method:
+
+- ✅ Works with all Jenkins configurations
+- ✅ Supports CSRF protection (enabled by default in modern Jenkins)
+- ✅ Supports wait mode to monitor build completion
+- ✅ Provides full access to Jenkins API features
+
+To create an API token:
 
 1. Log into Jenkins
 2. Click on your username (top right)
@@ -136,7 +155,42 @@ Jenkins API tokens are recommended for authentication. To create an API token:
 
 ![personal token](./images/personal-token.png)
 
-Alternatively, you can use a remote trigger token configured in your Jenkins job settings.
+**2. Remote Trigger Token Authentication**
+
+Use a remote trigger token configured in your Jenkins job. **Important limitations**:
+
+- ⚠️ **Does not work** with Jenkins CSRF protection enabled (default in modern Jenkins)
+- ⚠️ Requires anonymous users to have read access to the job, OR
+- ⚠️ Must be combined with API token authentication (see Combined Authentication below)
+
+**3. Combined Authentication (Recommended for Remote Tokens)**
+
+Use both API token and remote trigger token together:
+
+- ✅ Works with CSRF protection enabled
+- ✅ Provides double authentication security
+- ✅ Supports all features including wait mode
+
+```bash
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --user YOUR_USERNAME \
+  --token YOUR_API_TOKEN \
+  --remote-token YOUR_REMOTE_TOKEN \
+  --job my-jenkins-job
+```
+
+#### CSRF Protection Notice
+
+Modern Jenkins installations have CSRF protection enabled by default. If you encounter errors like:
+
+```txt
+Error 403 No valid crumb was included in the request
+```
+
+This means your Jenkins has CSRF protection enabled. You **must** use API token authentication (option 1 or 3 above). Remote trigger token alone will not work.
+
+For more information about Jenkins CSRF protection, see the [official Jenkins documentation](https://www.jenkins.io/doc/book/security/csrf-protection/).
 
 ### Parameters Reference
 
@@ -155,10 +209,19 @@ Alternatively, you can use a remote trigger token configured in your Jenkins job
 | Timeout       | `--timeout`          | `PLUGIN_TIMEOUT`, `JENKINS_TIMEOUT`             | No            | Maximum time to wait for job completion (default: 30m)                    |
 | Debug         | `--debug`            | `PLUGIN_DEBUG`, `JENKINS_DEBUG`                 | No            | Enable debug mode to show detailed parameter information (default: false) |
 
-**Authentication Requirements**: You must provide either:
+**Authentication Requirements**:
 
-- `user` + `token` (API token authentication), OR
-- `remote-token` (remote trigger token authentication)
+For Jenkins with **CSRF protection enabled** (default in modern Jenkins):
+
+- **Required**: `user` + `token` (API token authentication)
+- **Optional**: `remote-token` (for additional security)
+
+For Jenkins with **CSRF protection disabled** (not recommended):
+
+- **Option 1**: `user` + `token` (API token authentication)
+- **Option 2**: `remote-token` only (requires anonymous read access to job)
+
+**Important**: If you encounter "403 No valid crumb" errors, you must use API token authentication (`user` + `token`).
 
 **Parameters Format**: The `parameters` field accepts a multi-line string where each line contains one `key=value` pair:
 
@@ -220,9 +283,22 @@ drone-jenkins \
   --job my-jenkins-job
 ```
 
-**Using remote token authentication:**
+**Using combined authentication (API token + remote token - Recommended):**
 
 ```bash
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --user appleboy \
+  --token XXXXXXXX \
+  --remote-token REMOTE_TOKEN_HERE \
+  --job my-jenkins-job
+```
+
+**Using remote token only (only works without CSRF protection):**
+
+```bash
+# Note: This will fail if Jenkins has CSRF protection enabled
+# You will get "403 No valid crumb" error
 drone-jenkins \
   --host http://jenkins.example.com/ \
   --remote-token REMOTE_TOKEN_HERE \
@@ -309,6 +385,18 @@ docker run --rm \
   ghcr.io/appleboy/drone-jenkins
 ```
 
+**With combined authentication (API token + remote token):**
+
+```bash
+docker run --rm \
+  -e JENKINS_URL=http://jenkins.example.com/ \
+  -e JENKINS_USER=appleboy \
+  -e JENKINS_TOKEN=xxxxxxx \
+  -e JENKINS_REMOTE_TOKEN=your_remote_token \
+  -e JENKINS_JOB=my-jenkins-job \
+  ghcr.io/appleboy/drone-jenkins
+```
+
 **Wait for job completion:**
 
 ```bash
@@ -359,6 +447,57 @@ docker run --rm \
 ```
 
 For more detailed examples and advanced configurations, see [DOCS.md](DOCS.md).
+
+## Troubleshooting
+
+### Error: 403 No valid crumb was included in the request
+
+**Cause**: Your Jenkins server has CSRF protection enabled (this is the default in modern Jenkins). Learn more at the [Jenkins CSRF Protection documentation](https://www.jenkins.io/doc/book/security/csrf-protection/).
+
+**Solution**: Use API token authentication instead of remote token only:
+
+```bash
+# ❌ This will fail with CSRF protection enabled
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --remote-token YOUR_REMOTE_TOKEN \
+  --job my-jenkins-job
+
+# ✅ Use this instead
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --user YOUR_USERNAME \
+  --token YOUR_API_TOKEN \
+  --job my-jenkins-job
+
+# ✅ Or combine both for additional security
+drone-jenkins \
+  --host http://jenkins.example.com/ \
+  --user YOUR_USERNAME \
+  --token YOUR_API_TOKEN \
+  --remote-token YOUR_REMOTE_TOKEN \
+  --job my-jenkins-job
+```
+
+### Error: 401 Unauthorized
+
+**Cause**: Invalid credentials or incorrect authentication method.
+
+**Solutions**:
+
+1. Verify your username and API token are correct
+2. Ensure you're using an API token, not your Jenkins password
+3. Check if you have permission to trigger the job
+4. Make sure both `--user` and `--token` are provided together
+
+### Remote Token Not Working
+
+**Cause**: Remote trigger tokens alone only work in specific scenarios:
+
+- Jenkins has CSRF protection disabled (not recommended), AND
+- Anonymous users have read access to the job
+
+**Solution**: Use combined authentication (API token + remote token) as shown in the examples above.
 
 ## Development
 

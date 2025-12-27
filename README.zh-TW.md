@@ -46,6 +46,7 @@
   - [設定](#設定)
     - [Jenkins 伺服器設定](#jenkins-伺服器設定)
     - [認證](#認證)
+      - [CSRF 保護注意事項](#csrf-保護注意事項)
     - [參數參考](#參數參考)
   - [使用方式](#使用方式)
     - [命令列](#命令列)
@@ -137,6 +138,18 @@ docker run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 --re
 ![personal token](./images/personal-token.png)
 
 或者，您可以使用在 Jenkins 任務設定中配置的遠端觸發令牌。
+
+#### CSRF 保護注意事項
+
+現代 Jenkins 安裝預設啟用 CSRF 保護。如果您遇到以下錯誤：
+
+```
+Error 403 No valid crumb was included in the request
+```
+
+這表示您的 Jenkins 已啟用 CSRF 保護。您**必須**使用 API 令牌認證（user + token）。單獨使用遠端觸發令牌將無法運作。
+
+如需更多關於 Jenkins CSRF 保護的資訊，請參閱 [Jenkins 官方文件](https://www.jenkins.io/doc/book/security/csrf-protection/)。
 
 ### 參數參考
 
