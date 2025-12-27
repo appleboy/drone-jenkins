@@ -751,6 +751,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 		)
 		assert.NoError(t, err)
 		assert.NotNil(t, jenkins)
-		assert.Equal(t, http.DefaultClient, jenkins.Client)
+		assert.NotNil(t, jenkins.Client)
+		// Client should have CookieJar for CSRF session management
+		assert.NotNil(t, jenkins.Client.Jar)
 	})
 }
