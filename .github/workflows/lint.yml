@@ -12,6 +12,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: "stable"
+          check-latest: true
       - name: Checkout repository
         uses: actions/checkout@v6
 
@@ -44,6 +45,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
 
       - name: Checkout Code
         uses: actions/checkout@v6
