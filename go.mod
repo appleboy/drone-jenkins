@@ -1,6 +1,6 @@
 module github.com/appleboy/drone-jenkins
 
-go 1.24.0
+go 1.25.9
 
 require (
 	github.com/appleboy/com v1.1.1
