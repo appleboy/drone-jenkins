@@ -347,7 +347,11 @@ func TestWaitForCompletion(t *testing.T) {
 						[]byte(`{"number":456,"building":true,"duration":0,"result":null}`),
 					)
 				} else {
-					_, _ = w.Write([]byte(`{"number":456,"building":false,"duration":5000,"result":"SUCCESS"}`))
+					_, _ = w.Write(
+						[]byte(
+							`{"number":456,"building":false,"duration":5000,"result":"SUCCESS"}`,
+						),
+					)
 				}
 			}
 		}))
@@ -470,7 +474,11 @@ func TestWaitForCompletion(t *testing.T) {
 						[]byte(`{"number":456,"building":true,"duration":0,"result":null}`),
 					)
 				} else {
-					_, _ = w.Write([]byte(`{"number":456,"building":false,"duration":3000,"result":"FAILURE"}`))
+					_, _ = w.Write(
+						[]byte(
+							`{"number":456,"building":false,"duration":3000,"result":"FAILURE"}`,
+						),
+					)
 				}
 			}
 		}))

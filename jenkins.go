@@ -233,7 +233,7 @@ func (jenkins *Jenkins) sendRequest(
 		req.Header.Set(crumb.CrumbRequestField, crumb.Crumb)
 	}
 
-	return jenkins.Client.Do(req)
+	return jenkins.Client.Do(req) //nolint:gosec // user-configured Jenkins URL
 }
 
 func (jenkins *Jenkins) get(
