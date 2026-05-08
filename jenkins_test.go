@@ -22,7 +22,7 @@ func TestParseJobPath(t *testing.T) {
 	jenkins, err := NewJenkins(
 		context.Background(),
 		auth,
-		"http://example.com",
+		testExampleURL,
 		"",
 		false,
 		"",
@@ -38,8 +38,8 @@ func TestParseJobPath(t *testing.T) {
 
 func TestUnSupportProtocol(t *testing.T) {
 	auth := &Auth{
-		Username: "foo",
-		Token:    "bar",
+		Username: testUserFoo,
+		Token:    testUserBar,
 	}
 	jenkins, err := NewJenkins(context.Background(), auth, "example.com", "", false, "", false)
 	assert.NoError(t, err)
@@ -60,8 +60,8 @@ func TestTriggerBuild(t *testing.T) {
 	defer server.Close()
 
 	auth := &Auth{
-		Username: "foo",
-		Token:    "bar",
+		Username: testUserFoo,
+		Token:    testUserBar,
 	}
 	jenkins, err := NewJenkins(
 		context.Background(),
@@ -129,8 +129,8 @@ func TestPostAndGetLocation(t *testing.T) {
 			defer server.Close()
 
 			auth := &Auth{
-				Username: "test",
-				Token:    "test",
+				Username: testUserName,
+				Token:    testUserName,
 			}
 			jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 			assert.NoError(t, err)
@@ -206,8 +206,8 @@ func TestGetQueueItem(t *testing.T) {
 			defer server.Close()
 
 			auth := &Auth{
-				Username: "test",
-				Token:    "test",
+				Username: testUserName,
+				Token:    testUserName,
 			}
 			jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 			assert.NoError(t, err)
@@ -242,7 +242,7 @@ func TestGetBuildInfo(t *testing.T) {
 	}{
 		{
 			name:        "build in progress",
-			jobName:     "test-job",
+			jobName:     testJobName,
 			buildNumber: 123,
 			responseBody: `{"number":123,"building":true,"duration":0,"result":null,` +
 				`"url":"http://jenkins.example.com/job/test-job/123/"}`,
@@ -253,7 +253,7 @@ func TestGetBuildInfo(t *testing.T) {
 		},
 		{
 			name:        "build completed successfully",
-			jobName:     "test-job",
+			jobName:     testJobName,
 			buildNumber: 124,
 			responseBody: `{"number":124,"building":false,"duration":5000,"result":"SUCCESS",` +
 				`"url":"http://jenkins.example.com/job/test-job/124/"}`,
@@ -264,7 +264,7 @@ func TestGetBuildInfo(t *testing.T) {
 		},
 		{
 			name:        "build failed",
-			jobName:     "test-job",
+			jobName:     testJobName,
 			buildNumber: 125,
 			responseBody: `{"number":125,"building":false,"duration":3000,"result":"FAILURE",` +
 				`"url":"http://jenkins.example.com/job/test-job/125/"}`,
@@ -275,7 +275,7 @@ func TestGetBuildInfo(t *testing.T) {
 		},
 		{
 			name:           "build not found",
-			jobName:        "test-job",
+			jobName:        testJobName,
 			buildNumber:    999,
 			responseBody:   "Not Found",
 			responseStatus: http.StatusNotFound,
@@ -295,8 +295,8 @@ func TestGetBuildInfo(t *testing.T) {
 			defer server.Close()
 
 			auth := &Auth{
-				Username: "test",
-				Token:    "test",
+				Username: testUserName,
+				Token:    testUserName,
 			}
 			jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 			assert.NoError(t, err)
@@ -358,15 +358,15 @@ func TestWaitForCompletion(t *testing.T) {
 		defer server.Close()
 
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
-			"test-job",
+			testJobName,
 			queueID,
 			100*time.Millisecond,
 			5*time.Second,
@@ -392,15 +392,15 @@ func TestWaitForCompletion(t *testing.T) {
 		defer server.Close()
 
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
-			"test-job",
+			testJobName,
 			queueID,
 			50*time.Millisecond,
 			200*time.Millisecond,
@@ -434,15 +434,15 @@ func TestWaitForCompletion(t *testing.T) {
 		defer server.Close()
 
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
-			"test-job",
+			testJobName,
 			queueID,
 			50*time.Millisecond,
 			200*time.Millisecond,
@@ -485,15 +485,15 @@ func TestWaitForCompletion(t *testing.T) {
 		defer server.Close()
 
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
 		assert.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
-			"test-job",
+			testJobName,
 			queueID,
 			50*time.Millisecond,
 			5*time.Second,
@@ -626,8 +626,8 @@ func TestLoadCACert(t *testing.T) {
 func TestNewJenkinsWithCACert(t *testing.T) {
 	t.Run("with valid CA certificate", func(t *testing.T) {
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(
 			context.Background(),
@@ -650,8 +650,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 		assert.NoError(t, err)
 
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(
 			context.Background(),
@@ -668,8 +668,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 
 	t.Run("with invalid CA certificate content", func(t *testing.T) {
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(
 			context.Background(),
@@ -687,8 +687,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 
 	t.Run("with invalid PEM format", func(t *testing.T) {
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		invalidPEM := "-----BEGIN CERTIFICATE-----\ninvalid-base64-data\n-----END CERTIFICATE-----"
 		jenkins, err := NewJenkins(
@@ -707,8 +707,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 
 	t.Run("with nonexistent file path", func(t *testing.T) {
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(
 			context.Background(),
@@ -726,8 +726,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 
 	t.Run("insecure flag takes precedence over CA cert", func(t *testing.T) {
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		// When insecure is true, CA cert should be ignored
 		jenkins, err := NewJenkins(
@@ -745,8 +745,8 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 
 	t.Run("without CA certificate uses default client", func(t *testing.T) {
 		auth := &Auth{
-			Username: "test",
-			Token:    "test",
+			Username: testUserName,
+			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(
 			context.Background(),

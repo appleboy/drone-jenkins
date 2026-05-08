@@ -19,6 +19,8 @@ import (
 	"github.com/yassinebenaid/godump"
 )
 
+const tokenParam = "token"
+
 type (
 	// Auth contain username and token
 	Auth struct {
@@ -233,7 +235,7 @@ func (jenkins *Jenkins) sendRequest(
 		req.Header.Set(crumb.CrumbRequestField, crumb.Crumb)
 	}
 
-	return jenkins.Client.Do(req) //nolint:gosec // user-configured Jenkins URL
+	return jenkins.Client.Do(req)
 }
 
 func (jenkins *Jenkins) get(
@@ -487,14 +489,14 @@ func (jenkins *Jenkins) trigger(ctx context.Context, job string, params url.Valu
 		if params == nil {
 			params = url.Values{}
 		}
-		params.Set("token", jenkins.Token)
+		params.Set(tokenParam, jenkins.Token)
 	}
 
 	var urlPath string
 	// Check if params contains build parameters (excluding 'token')
 	hasBuildParams := false
 	for key := range params {
-		if key != "token" {
+		if key != tokenParam {
 			hasBuildParams = true
 			break
 		}
@@ -524,7 +526,7 @@ func (jenkins *Jenkins) trigger(ctx context.Context, job string, params url.Valu
 			// Create a copy of params with masked token for display
 			displayParams := url.Values{}
 			for key, values := range params {
-				if key == "token" {
+				if key == tokenParam {
 					// Mask token values for security
 					displayParams[key] = []string{"***MASKED***"}
 				} else {

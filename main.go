@@ -71,7 +71,7 @@ func main() {
 			EnvVars: []string{"PLUGIN_USER", "JENKINS_USER", "INPUT_USER"},
 		},
 		&cli.StringFlag{
-			Name:    "token",
+			Name:    tokenParam,
 			Aliases: []string{"t"},
 			Usage:   "jenkins API token for authentication",
 			EnvVars: []string{"PLUGIN_TOKEN", "JENKINS_TOKEN", "INPUT_TOKEN"},
@@ -175,7 +175,7 @@ func run(c *cli.Context) error {
 	}
 
 	// Validate authentication: either (user + token) or remote-token must be provided
-	hasUserAuth := c.String("user") != "" && c.String("token") != ""
+	hasUserAuth := c.String("user") != "" && c.String(tokenParam) != ""
 	hasRemoteToken := c.String("remote-token") != ""
 
 	if !hasUserAuth && !hasRemoteToken {
@@ -185,7 +185,7 @@ func run(c *cli.Context) error {
 	plugin := Plugin{
 		BaseURL:      c.String("host"),
 		Username:     c.String("user"),
-		Token:        c.String("token"),
+		Token:        c.String(tokenParam),
 		RemoteToken:  c.String("remote-token"),
 		Job:          c.StringSlice("job"),
 		Insecure:     c.Bool("insecure"),

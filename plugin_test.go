@@ -34,53 +34,53 @@ func TestValidateConfig(t *testing.T) {
 		{
 			name: "missing authentication",
 			plugin: Plugin{
-				BaseURL: "http://example.com",
+				BaseURL: testExampleURL,
 			},
 			wantError: true,
-			errorMsg:  "authentication required",
+			errorMsg:  testAuthRequiredErr,
 		},
 		{
 			name: "missing token (only username)",
 			plugin: Plugin{
-				BaseURL:  "http://example.com",
-				Username: "foo",
+				BaseURL:  testExampleURL,
+				Username: testUserFoo,
 			},
 			wantError: true,
-			errorMsg:  "authentication required",
+			errorMsg:  testAuthRequiredErr,
 		},
 		{
 			name: "missing username (only token)",
 			plugin: Plugin{
-				BaseURL: "http://example.com",
-				Token:   "bar",
+				BaseURL: testExampleURL,
+				Token:   testUserBar,
 			},
 			wantError: true,
-			errorMsg:  "authentication required",
+			errorMsg:  testAuthRequiredErr,
 		},
 		{
 			name: "user and token auth",
 			plugin: Plugin{
-				BaseURL:  "http://example.com",
-				Username: "foo",
-				Token:    "bar",
+				BaseURL:  testExampleURL,
+				Username: testUserFoo,
+				Token:    testUserBar,
 			},
 			wantError: false,
 		},
 		{
 			name: "remote token auth",
 			plugin: Plugin{
-				BaseURL:     "http://example.com",
-				RemoteToken: "remote-token-123",
+				BaseURL:     testExampleURL,
+				RemoteToken: testRemoteTokenValue,
 			},
 			wantError: false,
 		},
 		{
 			name: "both auth methods",
 			plugin: Plugin{
-				BaseURL:     "http://example.com",
-				Username:    "foo",
-				Token:       "bar",
-				RemoteToken: "remote-token-123",
+				BaseURL:     testExampleURL,
+				Username:    testUserFoo,
+				Token:       testUserBar,
+				RemoteToken: testRemoteTokenValue,
 			},
 			wantError: false,
 		},
@@ -118,7 +118,7 @@ func TestTrimWhitespaceFromSlice(t *testing.T) {
 		},
 		{
 			name:     "all whitespace",
-			input:    []string{"   ", "\t", "\n"},
+			input:    []string{testWhitespaceVal, "\t", "\n"},
 			expected: []string{},
 		},
 		{
@@ -129,12 +129,12 @@ func TestTrimWhitespaceFromSlice(t *testing.T) {
 		{
 			name:     "trim surrounding whitespace",
 			input:    []string{"  foo  ", " bar ", "baz"},
-			expected: []string{"foo", "bar", "baz"},
+			expected: []string{testUserFoo, testUserBar, "baz"},
 		},
 		{
 			name:     "mixed empty and valid",
-			input:    []string{"", "valid", "", "also-valid", ""},
-			expected: []string{"valid", "also-valid"},
+			input:    []string{"", testValidStr, "", "also-valid", ""},
+			expected: []string{testValidStr, "also-valid"},
 		},
 	}
 
@@ -157,29 +157,29 @@ func TestParseParameters(t *testing.T) {
 			name:  "valid parameters",
 			input: "key1=value1\nkey2=value2",
 			expected: url.Values{
-				"key1": []string{"value1"},
-				"key2": []string{"value2"},
+				testParamKey1: []string{testParamValue1},
+				testParamKey2: []string{testParamValue2},
 			},
 		},
 		{
 			name:  "parameter with multiple equals signs",
 			input: "key=value=with=equals",
 			expected: url.Values{
-				"key": []string{"value=with=equals"},
+				testParamKey: []string{"value=with=equals"},
 			},
 		},
 		{
 			name:  "parameter with spaces in value",
 			input: "key=value with spaces",
 			expected: url.Values{
-				"key": []string{"value with spaces"},
+				testParamKey: []string{"value with spaces"},
 			},
 		},
 		{
 			name:  "parameter with empty value",
 			input: "key=",
 			expected: url.Values{
-				"key": []string{""},
+				testParamKey: []string{""},
 			},
 		},
 		{
@@ -196,15 +196,15 @@ func TestParseParameters(t *testing.T) {
 			name:  "mixed valid and invalid",
 			input: "valid=yes\ninvalid\nalso=valid",
 			expected: url.Values{
-				"valid": []string{"yes"},
-				"also":  []string{"valid"},
+				testValidStr: []string{"yes"},
+				"also":       []string{testValidStr},
 			},
 		},
 		{
 			name:  "key with surrounding whitespace",
 			input: "  key  =value",
 			expected: url.Values{
-				"key": []string{"value"},
+				testParamKey: []string{"value"},
 			},
 		},
 		{
@@ -216,16 +216,16 @@ func TestParseParameters(t *testing.T) {
 			name:  "multiple empty lines",
 			input: "key1=value1\n\n\nkey2=value2",
 			expected: url.Values{
-				"key1": []string{"value1"},
-				"key2": []string{"value2"},
+				testParamKey1: []string{testParamValue1},
+				testParamKey2: []string{testParamValue2},
 			},
 		},
 		{
 			name:  "lines with whitespace only",
 			input: "key1=value1\n   \n\t\nkey2=value2",
 			expected: url.Values{
-				"key1": []string{"value1"},
-				"key2": []string{"value2"},
+				testParamKey1: []string{testParamValue1},
+				testParamKey2: []string{testParamValue2},
 			},
 		},
 	}
@@ -252,28 +252,28 @@ func TestExecMissingConfig(t *testing.T) {
 // TestExecMissingJenkinsUsername tests Exec with missing username
 func TestExecMissingJenkinsUsername(t *testing.T) {
 	plugin := Plugin{
-		BaseURL: "http://example.com",
+		BaseURL: testExampleURL,
 	}
 
 	err := plugin.Exec(context.Background())
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
-	assert.Contains(t, err.Error(), "authentication required")
+	assert.Contains(t, err.Error(), testAuthRequiredErr)
 }
 
 // TestExecMissingJenkinsToken tests Exec with missing token
 func TestExecMissingJenkinsToken(t *testing.T) {
 	plugin := Plugin{
-		BaseURL:  "http://example.com",
-		Username: "foo",
+		BaseURL:  testExampleURL,
+		Username: testUserFoo,
 	}
 
 	err := plugin.Exec(context.Background())
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
-	assert.Contains(t, err.Error(), "authentication required")
+	assert.Contains(t, err.Error(), testAuthRequiredErr)
 }
 
 // TestExecMissingJenkinsJob tests Exec with missing or empty job list
@@ -288,7 +288,7 @@ func TestExecMissingJenkinsJob(t *testing.T) {
 		},
 		{
 			name: "only whitespace jobs",
-			jobs: []string{"   ", "\t", "\n"},
+			jobs: []string{testWhitespaceVal, "\t", "\n"},
 		},
 		{
 			name: "nil jobs",
@@ -299,9 +299,9 @@ func TestExecMissingJenkinsJob(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			plugin := Plugin{
-				BaseURL:  "http://example.com",
-				Username: "foo",
-				Token:    "bar",
+				BaseURL:  testExampleURL,
+				Username: testUserFoo,
+				Token:    testUserBar,
 				Job:      tt.jobs,
 			}
 
@@ -326,8 +326,8 @@ func TestExecTriggerBuild(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:  server.URL,
-		Username: "foo",
-		Token:    "bar",
+		Username: testUserFoo,
+		Token:    testUserBar,
 		Job:      []string{"drone-jenkins"},
 	}
 
@@ -353,8 +353,8 @@ func TestExecTriggerMultipleJobs(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:  server.URL,
-		Username: "foo",
-		Token:    "bar",
+		Username: testUserFoo,
+		Token:    testUserBar,
 		Job:      []string{"job1", "job2", "job3"},
 	}
 
@@ -377,8 +377,8 @@ func TestExecWithParameters(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:    server.URL,
-		Username:   "foo",
-		Token:      "bar",
+		Username:   testUserFoo,
+		Token:      testUserBar,
 		Job:        []string{"parameterized-job"},
 		Parameters: "branch=main\nenvironment=production",
 	}
@@ -403,16 +403,16 @@ func TestExecWithRemoteToken(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:     server.URL,
-		Username:    "foo",
-		Token:       "bar",
-		RemoteToken: "remote-token-123",
+		Username:    testUserFoo,
+		Token:       testUserBar,
+		RemoteToken: testRemoteTokenValue,
 		Job:         []string{"secure-job"},
 	}
 
 	err := plugin.Exec(context.Background())
 
 	assert.NoError(t, err)
-	assert.Equal(t, "remote-token-123", receivedToken)
+	assert.Equal(t, testRemoteTokenValue, receivedToken)
 }
 
 // TestExecWithJobsContainingWhitespace tests job list with whitespace
@@ -432,9 +432,9 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:  server.URL,
-		Username: "foo",
-		Token:    "bar",
-		Job:      []string{"  job1  ", "job2", "   ", "job3"},
+		Username: testUserFoo,
+		Token:    testUserBar,
+		Job:      []string{"  job1  ", "job2", testWhitespaceVal, "job3"},
 	}
 
 	err := plugin.Exec(context.Background())
@@ -467,9 +467,9 @@ func TestExecWithWaitSuccess(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:  server.URL,
-		Username: "foo",
-		Token:    "bar",
-		Job:      []string{"test-job"},
+		Username: testUserFoo,
+		Token:    testUserBar,
+		Job:      []string{testJobName},
 		Wait:     true,
 	}
 
@@ -501,9 +501,9 @@ func TestExecWithWaitFailure(t *testing.T) {
 
 	plugin := Plugin{
 		BaseURL:  server.URL,
-		Username: "foo",
-		Token:    "bar",
-		Job:      []string{"test-job"},
+		Username: testUserFoo,
+		Token:    testUserBar,
+		Job:      []string{testJobName},
 		Wait:     true,
 	}
 
