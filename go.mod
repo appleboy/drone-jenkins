@@ -3,7 +3,7 @@ module github.com/appleboy/drone-jenkins
 go 1.25.10
 
 require (
-	github.com/appleboy/com v1.1.1
+	github.com/appleboy/com v1.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.7
