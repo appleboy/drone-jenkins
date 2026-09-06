@@ -6,7 +6,7 @@
 
 [![Lint and Testing](https://github.com/appleboy/drone-jenkins/actions/workflows/lint.yml/badge.svg)](https://github.com/appleboy/drone-jenkins/actions/workflows/lint.yml)
 [![Trivy Security Scan](https://github.com/appleboy/drone-jenkins/actions/workflows/trivy.yml/badge.svg)](https://github.com/appleboy/drone-jenkins/actions/workflows/trivy.yml)
-[![GoDoc](https://godoc.org/github.com/appleboy/drone-jenkins?status.svg)](https://godoc.org/github.com/appleboy/drone-jenkins)
+[![GoDoc](https://pkg.go.dev/badge/github.com/appleboy/drone-jenkins.svg)](https://pkg.go.dev/github.com/appleboy/drone-jenkins)
 [![codecov](https://codecov.io/gh/appleboy/drone-jenkins/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/drone-jenkins)
 
 一个用于触发 [Jenkins](https://jenkins.io/) 任务的 CLI 工具与 CI/CD 插件。支持 [GitHub Actions](https://github.com/features/actions)、[GitLab CI](https://docs.gitlab.com/ee/ci/)、[Gitea Action](https://docs.gitea.com/usage/actions/overview) 以及任何支持 Docker 容器或 Shell 命令的平台。
