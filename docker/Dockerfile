@@ -21,6 +21,6 @@ RUN addgroup -g 1000 drone && \
 COPY release/${TARGETOS}/${TARGETARCH}/drone-jenkins /bin/
 RUN chown drone:drone /bin/drone-jenkins
 
-USER drone
+USER 1000:1000
 
 ENTRYPOINT ["/bin/drone-jenkins"]
