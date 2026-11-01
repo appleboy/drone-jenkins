@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseJobPath(t *testing.T) {
@@ -28,7 +29,7 @@ func TestParseJobPath(t *testing.T) {
 		"",
 		false,
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("/foo/"))
 	assert.Equal(t, "/job/foo", jenkins.parseJobPath("foo/"))
@@ -42,10 +43,10 @@ func TestUnSupportProtocol(t *testing.T) {
 		Token:    testUserBar,
 	}
 	jenkins, err := NewJenkins(context.Background(), auth, "example.com", "", false, "", false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	queueID, err := jenkins.trigger(context.Background(), "drone-jenkins", nil)
-	assert.NotNil(t, err)
+	require.Error(t, err)
 	assert.Equal(t, 0, queueID)
 }
 
@@ -72,12 +73,12 @@ func TestTriggerBuild(t *testing.T) {
 		"",
 		false,
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	params := url.Values{"param": []string{"value"}}
 	queueID, err := jenkins.trigger(context.Background(), "drone-jenkins", params)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 123, queueID)
 	assert.Equal(t, "value", receivedParams.Get("param"))
 	assert.Equal(t, "remote-token", receivedParams.Get("token"))
@@ -133,14 +134,14 @@ func TestPostAndGetLocation(t *testing.T) {
 				Token:    testUserName,
 			}
 			jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			queueID, err := jenkins.postAndGetLocation(context.Background(), "/test", nil)
 
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tt.expectID, queueID)
 			}
 		})
@@ -210,14 +211,14 @@ func TestGetQueueItem(t *testing.T) {
 				Token:    testUserName,
 			}
 			jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			queueItem, err := jenkins.getQueueItem(context.Background(), tt.queueID)
 
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.NotNil(t, queueItem)
 				assert.Equal(t, tt.queueID, queueItem.ID)
 				assert.Equal(t, tt.expectBlocked, queueItem.Blocked)
@@ -299,14 +300,14 @@ func TestGetBuildInfo(t *testing.T) {
 				Token:    testUserName,
 			}
 			jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			buildInfo, err := jenkins.getBuildInfo(context.Background(), tt.jobName, tt.buildNumber)
 
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.NotNil(t, buildInfo)
 				assert.Equal(t, tt.buildNumber, buildInfo.Number)
 				assert.Equal(t, tt.expectBuilding, buildInfo.Building)
@@ -318,12 +319,12 @@ func TestGetBuildInfo(t *testing.T) {
 
 func TestWaitForCompletion(t *testing.T) {
 	t.Run("successful completion", func(t *testing.T) {
-		var callCount int32
+		var callCount atomic.Int32
 		queueID := 123
 		buildNumber := 456
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			count := atomic.AddInt32(&callCount, 1)
+			count := callCount.Add(1)
 
 			switch r.URL.Path {
 			case testQueueItemPath:
@@ -362,7 +363,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
@@ -372,7 +373,7 @@ func TestWaitForCompletion(t *testing.T) {
 			5*time.Second,
 		)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, buildInfo)
 		assert.Equal(t, buildNumber, buildInfo.Number)
 		assert.False(t, buildInfo.Building)
@@ -396,7 +397,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
@@ -406,17 +407,17 @@ func TestWaitForCompletion(t *testing.T) {
 			200*time.Millisecond,
 		)
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, buildInfo)
 		assert.Contains(t, err.Error(), "timeout")
 	})
 
 	t.Run("timeout waiting for build", func(t *testing.T) {
-		var callCount int32
+		var callCount atomic.Int32
 		queueID := 123
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			count := atomic.AddInt32(&callCount, 1)
+			count := callCount.Add(1)
 
 			switch r.URL.Path {
 			case testQueueItemPath:
@@ -438,7 +439,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
@@ -448,18 +449,18 @@ func TestWaitForCompletion(t *testing.T) {
 			200*time.Millisecond,
 		)
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, buildInfo)
 		assert.Contains(t, err.Error(), "timeout")
 	})
 
 	t.Run("build failed", func(t *testing.T) {
-		var callCount int32
+		var callCount atomic.Int32
 		queueID := 123
 		buildNumber := 456
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			count := atomic.AddInt32(&callCount, 1)
+			count := callCount.Add(1)
 
 			switch r.URL.Path {
 			case testQueueItemPath:
@@ -489,7 +490,7 @@ func TestWaitForCompletion(t *testing.T) {
 			Token:    testUserName,
 		}
 		jenkins, err := NewJenkins(context.Background(), auth, server.URL, "", false, "", false)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		buildInfo, err := jenkins.waitForCompletion(
 			context.Background(),
@@ -499,7 +500,7 @@ func TestWaitForCompletion(t *testing.T) {
 			5*time.Second,
 		)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, buildInfo)
 		assert.Equal(t, buildNumber, buildInfo.Number)
 		assert.False(t, buildInfo.Building)
@@ -531,20 +532,20 @@ ud3vS1A5+g==
 func TestLoadCACert(t *testing.T) {
 	t.Run("empty string returns nil", func(t *testing.T) {
 		data, err := loadCACert(context.Background(), "")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Nil(t, data)
 	})
 
 	t.Run("PEM content directly", func(t *testing.T) {
 		data, err := loadCACert(context.Background(), testCACert)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, data)
 		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
 	})
 
 	t.Run("PEM content with leading whitespace", func(t *testing.T) {
 		data, err := loadCACert(context.Background(), "  \n"+testCACert)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, data)
 		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
 	})
@@ -554,17 +555,17 @@ func TestLoadCACert(t *testing.T) {
 		tmpDir := t.TempDir()
 		certFile := filepath.Join(tmpDir, "ca.pem")
 		err := os.WriteFile(certFile, []byte(testCACert), 0o600)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		data, err := loadCACert(context.Background(), certFile)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, data)
 		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
 	})
 
 	t.Run("file not found", func(t *testing.T) {
 		data, err := loadCACert(context.Background(), "/nonexistent/path/ca.pem")
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, data)
 		assert.Contains(t, err.Error(), "failed to read CA certificate file")
 	})
@@ -577,7 +578,7 @@ func TestLoadCACert(t *testing.T) {
 		defer server.Close()
 
 		data, err := loadCACert(context.Background(), server.URL)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, data)
 		assert.Contains(t, string(data), "BEGIN CERTIFICATE")
 	})
@@ -610,14 +611,14 @@ func TestLoadCACert(t *testing.T) {
 		defer server.Close()
 
 		data, err := loadCACert(context.Background(), server.URL)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, data)
 		assert.Contains(t, err.Error(), "HTTP 404")
 	})
 
 	t.Run("HTTP URL unreachable", func(t *testing.T) {
 		data, err := loadCACert(context.Background(), "http://localhost:59999/nonexistent")
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, data)
 		assert.Contains(t, err.Error(), "failed to fetch CA certificate from URL")
 	})
@@ -638,7 +639,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			testCACert,
 			false,
 		)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, jenkins)
 		assert.NotNil(t, jenkins.Client)
 	})
@@ -647,7 +648,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 		tmpDir := t.TempDir()
 		certFile := filepath.Join(tmpDir, "ca.pem")
 		err := os.WriteFile(certFile, []byte(testCACert), 0o600)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		auth := &Auth{
 			Username: testUserName,
@@ -662,7 +663,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			certFile,
 			false,
 		)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, jenkins)
 	})
 
@@ -680,7 +681,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			"invalid-cert-data",
 			false,
 		)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, jenkins)
 		assert.Contains(t, err.Error(), "failed to read CA certificate file")
 	})
@@ -700,7 +701,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			invalidPEM,
 			false,
 		)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, jenkins)
 		assert.Contains(t, err.Error(), "failed to parse CA certificate")
 	})
@@ -719,7 +720,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			"/nonexistent/ca.pem",
 			false,
 		)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, jenkins)
 		assert.Contains(t, err.Error(), "failed to load CA certificate")
 	})
@@ -739,7 +740,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			testCACert,
 			false,
 		)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, jenkins)
 	})
 
@@ -757,7 +758,7 @@ func TestNewJenkinsWithCACert(t *testing.T) {
 			"",
 			false,
 		)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, jenkins)
 		assert.NotNil(t, jenkins.Client)
 		// Client should have CookieJar for CSRF session management

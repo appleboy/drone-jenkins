@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"os"
 	"time"
@@ -167,11 +167,11 @@ REPOSITORY:
 func run(c *cli.Context) error {
 	// Validate required parameters
 	if c.String("host") == "" {
-		return fmt.Errorf("host is required")
+		return errors.New("host is required")
 	}
 
 	if len(c.StringSlice("job")) == 0 {
-		return fmt.Errorf("at least one job is required")
+		return errors.New("at least one job is required")
 	}
 
 	// Validate authentication: either (user + token) or remote-token must be provided
@@ -179,7 +179,7 @@ func run(c *cli.Context) error {
 	hasRemoteToken := c.String("remote-token") != ""
 
 	if !hasUserAuth && !hasRemoteToken {
-		return fmt.Errorf("authentication required: provide either (user + token) or remote-token")
+		return errors.New("authentication required: provide either (user + token) or remote-token")
 	}
 
 	plugin := Plugin{

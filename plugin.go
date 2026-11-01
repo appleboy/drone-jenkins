@@ -51,8 +51,8 @@ func parseParameters(params string) url.Values {
 	values := url.Values{}
 
 	// Split by newlines and process each line
-	lines := strings.Split(params, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(params, "\n")
+	for line := range lines {
 		// Skip empty lines
 		trimmedLine := strings.TrimSpace(line)
 		if trimmedLine == "" {
