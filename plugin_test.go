@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -90,10 +91,10 @@ func TestValidateConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.plugin.validateConfig()
 			if tt.wantError {
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errorMsg)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -244,7 +245,7 @@ func TestExecMissingConfig(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
 	assert.Contains(t, err.Error(), "jenkins base URL is required")
 }
@@ -257,7 +258,7 @@ func TestExecMissingJenkinsUsername(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
 	assert.Contains(t, err.Error(), testAuthRequiredErr)
 }
@@ -271,7 +272,7 @@ func TestExecMissingJenkinsToken(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "configuration error")
 	assert.Contains(t, err.Error(), testAuthRequiredErr)
 }
@@ -306,7 +307,7 @@ func TestExecMissingJenkinsJob(t *testing.T) {
 			}
 
 			err := plugin.Exec(context.Background())
-			assert.Error(t, err)
+			require.Error(t, err)
 			assert.Contains(t, err.Error(), "at least one Jenkins job name is required")
 		})
 	}
@@ -333,7 +334,7 @@ func TestExecTriggerBuild(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // TestExecTriggerMultipleJobs tests triggering multiple jobs
@@ -342,7 +343,7 @@ func TestExecTriggerMultipleJobs(t *testing.T) {
 	jobsTriggered := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only count POST requests (job triggers), not GET requests (crumb)
-		if r.Method == "POST" {
+		if r.Method == http.MethodPost {
 			jobsTriggered++
 		}
 		w.Header().
@@ -360,7 +361,7 @@ func TestExecTriggerMultipleJobs(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 3, jobsTriggered)
 }
 
@@ -385,7 +386,7 @@ func TestExecWithParameters(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "main", receivedQuery.Get("branch"))
 	assert.Equal(t, "production", receivedQuery.Get("environment"))
 }
@@ -411,7 +412,7 @@ func TestExecWithRemoteToken(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, testRemoteTokenValue, receivedToken)
 }
 
@@ -421,7 +422,7 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 	jobsTriggered := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only count POST requests (job triggers), not GET requests (crumb)
-		if r.Method == "POST" {
+		if r.Method == http.MethodPost {
 			jobsTriggered++
 		}
 		w.Header().
@@ -439,7 +440,7 @@ func TestExecWithJobsContainingWhitespace(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	// Should trigger 3 jobs (whitespace-only entry should be filtered out)
 	assert.Equal(t, 3, jobsTriggered)
 }
@@ -475,7 +476,7 @@ func TestExecWithWaitSuccess(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // TestExecWithWaitFailure tests job execution with wait for failed build
@@ -509,6 +510,6 @@ func TestExecWithWaitFailure(t *testing.T) {
 
 	err := plugin.Exec(context.Background())
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed with status: FAILURE")
 }

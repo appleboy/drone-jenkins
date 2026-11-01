@@ -1,7 +1,7 @@
 DIST := dist
 EXECUTABLE := drone-jenkins
-GOFMT ?= gofumpt -l -s -w
 GO ?= go
+TOOLS_MOD := -modfile=go.tools.mod
 GOFILES := $(shell find . -name "*.go" -type f)
 HAS_GO = $(shell hash $(GO) > /dev/null 2>&1 && echo "GO" || echo "NOGO" )
 
@@ -48,11 +48,11 @@ test: ## Run tests with coverage
 
 .PHONY: lint
 lint: ## Run golangci-lint
-	golangci-lint run -v
+	$(GO) tool $(TOOLS_MOD) golangci-lint run
 
 .PHONY: fmt
 fmt: ## Format code with golangci-lint
-	golangci-lint fmt
+	$(GO) tool $(TOOLS_MOD) golangci-lint fmt
 
 .PHONY: install
 install: $(GOFILES) ## Install binary to GOPATH/bin
@@ -92,3 +92,11 @@ help: ## Print this help message.
 .PHONY: version
 version: ## Print current version
 	@echo $(VERSION)
+
+fmt-check:
+	$(GO) tool $(TOOLS_MOD) golangci-lint fmt --diff --diff-colored=false
+
+install-tools:
+	$(GO) mod download $(TOOLS_MOD)
+
+.PHONY: fmt fmt-check lint install-tools

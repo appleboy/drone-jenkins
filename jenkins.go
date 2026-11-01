@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -145,7 +146,7 @@ func NewJenkins(
 		}
 
 		if !certPool.AppendCertsFromPEM(caCertData) {
-			return nil, fmt.Errorf("failed to parse CA certificate")
+			return nil, errors.New("failed to parse CA certificate")
 		}
 
 		tlsConfig = &tls.Config{
@@ -189,7 +190,7 @@ func (jenkins *Jenkins) buildURL(path string, params url.Values) (requestURL str
 		}
 	}
 
-	return
+	return requestURL
 }
 
 // getCrumb fetches CSRF crumb from Jenkins
@@ -210,7 +211,7 @@ func (jenkins *Jenkins) getCrumb(ctx context.Context) (*CrumbResponse, error) {
 		if jenkins.Debug {
 			log.Printf("crumb not available (CSRF may be disabled): %v", err)
 		}
-		return nil, nil
+		return nil, nil //nolint:nilnil // A missing crumb means CSRF protection is disabled; preserve this supported fallback.
 	}
 
 	// Cache the crumb for subsequent requests
@@ -242,11 +243,11 @@ func (jenkins *Jenkins) get(
 	ctx context.Context,
 	path string,
 	params url.Values,
-	body interface{},
+	body any,
 ) error {
 	requestURL := jenkins.buildURL(path, params)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
 		return err
 	}
@@ -291,7 +292,7 @@ func (jenkins *Jenkins) postAndGetLocation(
 
 	requestURL := jenkins.buildURL(path, params)
 
-	req, err := http.NewRequestWithContext(ctx, "POST", requestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -319,7 +320,7 @@ func (jenkins *Jenkins) postAndGetLocation(
 	// Location format: http://jenkins.example.com/queue/item/123/
 	location := resp.Header.Get("Location")
 	if location == "" {
-		return 0, fmt.Errorf("no Location header in response")
+		return 0, errors.New("no Location header in response")
 	}
 
 	// Parse queue ID from URL
@@ -327,13 +328,13 @@ func (jenkins *Jenkins) postAndGetLocation(
 	var queueID int
 	// Find the pattern "/queue/item/" and extract the number after it
 	queueItemPrefix := "/queue/item/"
-	idx := strings.Index(location, queueItemPrefix)
-	if idx == -1 {
+	_, after, ok := strings.Cut(location, queueItemPrefix)
+	if !ok {
 		return 0, fmt.Errorf("failed to parse queue ID from Location: %s", location)
 	}
 
 	// Extract the substring after "/queue/item/"
-	afterPrefix := location[idx+len(queueItemPrefix):]
+	afterPrefix := after
 	// Parse the number (stop at / or end of string)
 	if _, err := fmt.Sscanf(afterPrefix, "%d", &queueID); err != nil {
 		return 0, fmt.Errorf("failed to parse queue ID from Location: %s", location)
@@ -345,9 +346,9 @@ func (jenkins *Jenkins) postAndGetLocation(
 func (jenkins *Jenkins) parseJobPath(job string) string {
 	var path string
 
-	jobs := strings.Split(strings.TrimPrefix(job, "/"), "/")
+	jobs := strings.SplitSeq(strings.TrimPrefix(job, "/"), "/")
 
-	for _, value := range jobs {
+	for value := range jobs {
 		value = strings.Trim(value, " ")
 		if len(value) == 0 {
 			continue
